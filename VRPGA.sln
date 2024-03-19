@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34701.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRPGA", "VRPGA.vcxproj", "{E5428A6F-DE19-4F82-B29F-B94998CBE27A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		DebugNoMatplot|x64 = DebugNoMatplot|x64
+		DebugNoMatplot|x86 = DebugNoMatplot|x86
+		DebugWithMatplotPlusPlus|x64 = DebugWithMatplotPlusPlus|x64
+		DebugWithMatplotPlusPlus|x86 = DebugWithMatplotPlusPlus|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		ReleaseWithMatplotPlusPlus|x64 = ReleaseWithMatplotPlusPlus|x64
+		ReleaseWithMatplotPlusPlus|x86 = ReleaseWithMatplotPlusPlus|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Debug|x64.ActiveCfg = Debug|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Debug|x64.Build.0 = Debug|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Debug|x86.ActiveCfg = Debug|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Debug|x86.Build.0 = Debug|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugNoMatplot|x64.ActiveCfg = DebugNoMatplot|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugNoMatplot|x64.Build.0 = DebugNoMatplot|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugNoMatplot|x86.ActiveCfg = DebugNoMatplot|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugNoMatplot|x86.Build.0 = DebugNoMatplot|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugWithMatplotPlusPlus|x64.ActiveCfg = DebugWithMatplotPlusPlus|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugWithMatplotPlusPlus|x64.Build.0 = DebugWithMatplotPlusPlus|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugWithMatplotPlusPlus|x86.ActiveCfg = DebugWithMatplotPlusPlus|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.DebugWithMatplotPlusPlus|x86.Build.0 = DebugWithMatplotPlusPlus|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Release|x64.ActiveCfg = Release|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Release|x64.Build.0 = Release|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Release|x86.ActiveCfg = Release|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.Release|x86.Build.0 = Release|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.ReleaseWithMatplotPlusPlus|x64.ActiveCfg = ReleaseWithMatplotPlusPlus|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.ReleaseWithMatplotPlusPlus|x64.Build.0 = ReleaseWithMatplotPlusPlus|x64
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.ReleaseWithMatplotPlusPlus|x86.ActiveCfg = ReleaseWithMatplotPlusPlus|Win32
+		{E5428A6F-DE19-4F82-B29F-B94998CBE27A}.ReleaseWithMatplotPlusPlus|x86.Build.0 = ReleaseWithMatplotPlusPlus|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9E3B1612-8B5C-4B68-BFF4-751F9546A9C1}
+	EndGlobalSection
+EndGlobal
