@@ -10,7 +10,7 @@
 
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
-#define Npop_TSP 16
+#define Npop_TSP 256
 
 std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {

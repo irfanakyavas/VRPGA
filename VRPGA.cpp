@@ -87,7 +87,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     while(n < Npop)
     {
 		chromosomes[n] = Chromosome(Ncustomers, Nvehicles);
-        initialiseRandomChromosome(chromosomes[n]);
+        initialiseRandomChromosome(chromosomes[n], true);
         auto r = chromosome_genes.insert(chromosomes[n].genes);
         if (r.second == true)
             n++;
@@ -153,7 +153,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
             //crossover(chromosomes[s5].genes, chromosomes[s6].genes, tmp2.genes, Nvehicles);
             //tmp3 = tmp1;//.totalWorkTime < tmp2.totalWorkTime ? tmp1:tmp2;
             
-            if (randomDouble(0,1) <= i/Ngen)
+            if (randomInteger(0,Npop) == 0)
                 mutate(tmp1.genes);
             
             auto r = chromosome_genes.insert(tmp1.genes);
@@ -175,7 +175,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
                 initialiseRandomChromosome(chromosomes[j]);
                 chromosome_genes.insert(chromosomes[j].genes);
 #ifndef _DEBUG
-                plotChromosomeSerial(fig_currentBest, bestChromosomeEver, "Current Best Solution");
+                //plotChromosomeSerial(fig_currentBest, bestChromosomeEver, "Current Best Solution");
 #endif // !
             }
         }
@@ -197,12 +197,21 @@ void testTSPwithSingleChromosome() {
     //matplot::show();
 }
 
+
+
 int main() {
-    loadData("TCB100");
+
+    ChromosomeTSP p1(9);
+    ChromosomeTSP p2(9);
+
+    p1.path = {1,2,3,4,5,6,7,8,9};
+    p2.path = {5,4,6,9,2,1,7,8,3};
+    return;
+    loadData("TCB995");
     //(std::vector<uint32_t> customers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t & Fstar, bool verbose = false)
     uint32_t Fstar = UINT32_MAX;
 
-    Chromosome bestChromosomeEver = solveVRP(customers.size(),12, 64, 8, 1024, Fstar, true);
+    Chromosome bestChromosomeEver = solveVRP(customers.size(),20, 256, 8, 1024, Fstar, true);
 #ifndef _DEBUG
     //plot(bestChromosomeEver);
 #endif // !

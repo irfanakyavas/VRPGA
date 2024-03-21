@@ -80,7 +80,7 @@ struct Chromosome {
 			if (verbose) cout << endl << "\t\t[TSP] Solving TSP for vehicle " << i << endl;
 			uint32_t timeSpent = 0;
 			if (customersVisitedByVehicle[i].size() > 0)
-				customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 64, timeSpent, verbose);
+				customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 1024, timeSpent, verbose);
 			workTimeByVehicle[i] += timeSpent;
 			totalWorkTime += timeSpent;
 

@@ -15,10 +15,12 @@ typedef struct ChromosomeTSP
 
     uint32_t calculateFitness()
     {
+        static std::vector<std::vector<uint32_t>> dists = distanceMatrix;
+        static std::vector<uint32_t> indices = customersSortIndices;
         fitness = Customer::depotDistances[customersSortIndices[path[0]]];
         for (uint32_t fi = 0; fi < Ncustomers() - 1; fi++)
         {
-            fitness += Distance(path[fi], path[fi + 1]);
+            fitness += dists[indices[path[fi]]][indices[path[fi + 1]]];
         }
         return fitness;
     }

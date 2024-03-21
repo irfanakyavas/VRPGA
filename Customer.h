@@ -21,7 +21,7 @@ struct Customer {
 	static std::vector<uint32_t> customerIDs;
 };
 
-std::vector<std::vector<int>> distanceMatrix;
+std::vector<std::vector<uint32_t>> distanceMatrix;
 std::vector<Customer> customers;
 std::vector<Customer> customersSortedByDepotAngle;
 std::vector<uint32_t> customersSortIndices;
@@ -110,7 +110,7 @@ void loadDemandFromCSV(const std::string& filename, std::vector<Customer>& custo
     }
 }
 
-std::vector<std::vector<int>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
+std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
     std::ifstream file(filename);
 
     if (file.is_open()) {
@@ -122,7 +122,7 @@ std::vector<std::vector<int>> loadDistanceMatrixFromTSV(const std::string& filen
         // status variable for the
         bool currentLineIsDepotDistances = true;
         while (std::getline(file, line)) {
-            std::vector<int> row;
+            std::vector<uint32_t> row;
             int value;
 
             // Create a stringstream from the line

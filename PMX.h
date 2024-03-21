@@ -102,6 +102,7 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
             else
                 o1[i] = p2[i];
     }
+    visited.clear();
 }
 
 inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, vector<uint32_t>& o2)
@@ -153,13 +154,14 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
 
  void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1, bool visited[])
 {
+     uint32_t left, k_, p, temp, right, Ncustomers;
+     Ncustomers = p2.size();
      if(p1.size() != p2.size())
          cout << "CATASTROPHIC ERROR: p1.size() != p2.size()" << endl;
-     uint32_t Ncustomers = p2.size();
-    //o1 = std::vector<uint32_t>(p1.size());
 
-    if (Ncustomers <= 3)
+    if (Ncustomers <= 2)
     {
+        cout << "CATASTROPHIC ERROR " << Ncustomers << " Customers assigned!" << endl;
         if (randomInteger(1, 100) < 50)
         {
             for (uint32_t i = 0; i < Ncustomers; i++)
@@ -174,11 +176,10 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
     }
 
 
-    uint32_t left = randomInteger(1,  Ncustomers - 1);
-    uint32_t right = randomInteger(1, Ncustomers - 1);
+   left = randomInteger(1,  Ncustomers - 1);
+   right = randomInteger(1, Ncustomers - 1);
     while (left == right)
         right = randomInteger(1, Ncustomers - 1);
-    uint32_t k_, p, temp; 
 
     if (left > right)
     {
@@ -193,8 +194,9 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
         o1[k_] = p1[k_];
         visited[p1[k_]] = true;
     }
-
-    k_ = (right + 1) % p1.size();
+    right++;
+    //k_ = (right + 1) % p1.size();
+    k_ = right < Ncustomers ? right : right - Ncustomers;
     p = k_;
 
     while (k_ != left)
