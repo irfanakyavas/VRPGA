@@ -1,4 +1,7 @@
 #pragma once
+#pragma comment(linker, "/STACK:4000000000")
+#pragma comment(linker, "/HEAP:400000000")
+
 #include <algorithm>
 #include <execution>
 #include <numeric>
@@ -23,7 +26,7 @@
 using namespace std;
 
 #include <map>
-#include <unordered_set>
+#include <set>
 
 inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, const uint32_t& Nvehicles)
 {
@@ -148,10 +151,9 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
 
 #define PMX_SECTION_WIDTH p1.size()/2
 
-inline void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1)
+ void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1, bool visited[])
 {
     //o1 = std::vector<uint32_t>(p1.size());
-    uint32_t o1temp[10000];
 
     if (p1.size() <= 3)
     {
@@ -167,7 +169,7 @@ inline void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint
         }
         return;
     }
-    unordered_set<uint32_t> visited(p1.size());
+
 
     uint32_t left = randomInteger(1, p1.size() - 1);
     uint32_t right = randomInteger(1, p1.size() - 1);
@@ -186,7 +188,7 @@ inline void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint
     for (k_ = left; k_ <= right; k_++)
     {
         o1[k_] = p1[k_];
-        visited.insert(p1[k_]);
+        visited[p1[k_]] = true;
     }
 
     k_ = (right + 1) % p1.size();
@@ -194,13 +196,16 @@ inline void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint
 
     while (k_ != left)
     {
-        if (visited.find(p2[p]) == visited.end())
+        //cout << p2[p] << endl;
+        if (!visited[p2[p]])
         {
             o1[k_] = p2[p];
             k_ = (k_ + 1) % p1.size();
-            visited.insert(p2[p]);
+            visited[p2[p]] = true;
         }
         p = (p + 1) % p1.size();
     }
+    // Copy o1tmp to o1, optimize code
+    //memset(visited, 0, sizeof(visited));
 }
 #endif

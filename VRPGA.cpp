@@ -8,9 +8,6 @@
 #include "Customer.h"
 #include "ChromosomeBaker2003.h"
 
-#pragma comment(linker, "/STACK:4000000000")
-#pragma comment(linker, "/HEAP:400000000")
-
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
 
@@ -122,7 +119,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
 
     for (int k = 0; k < 10; k++)
     {
-        cout << chromosomes[k] << endl;
+       // cout << chromosomes[k] << endl;
     }
     plotChromosomeSerial(fig_initial, bestChromosomeEver, "Initial population best");
     for (i = 0; i < Ngen; i++) {
@@ -136,7 +133,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
             
             for (int k = 0; k < 10; k++)
             {
-                cout << chromosomes[k] << endl;
+               // cout << chromosomes[k] << endl;
             }
         }
         uint32_t s1, s2, s3, s4, s5, s6, s7, s8;
