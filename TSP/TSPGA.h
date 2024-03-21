@@ -10,12 +10,12 @@
 
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
-#define Npop_TSP 256
+#define Npop_TSP 16
 
 std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {
     uint32_t Ncustomers = customers.size();
-    static uint32_t CustomerMax = 101;
+    uint32_t CustomerMax = maxv(customers) + 1;
     //alloca()
     //constexpr int v = sizeof(bool)* Npop_TSP * 128 * 100;
     bool *visited = (bool*) alloca(CustomerMax*sizeof(bool));

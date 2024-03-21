@@ -154,10 +154,10 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
 
  void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1, bool visited[])
 {
-     uint32_t left, k_, p, temp, right, Ncustomers;
-     Ncustomers = p2.size();
-     if(p1.size() != p2.size())
-         cout << "CATASTROPHIC ERROR: p1.size() != p2.size()" << endl;
+     static uint32_t left, k_, p, temp, right;
+     uint32_t Ncustomers = p2.size();
+     //if(p1.size() != p2.size())
+     //    cout << "CATASTROPHIC ERROR: p1.size() != p2.size()" << endl;
 
     if (Ncustomers <= 2)
     {
@@ -176,10 +176,10 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
     }
 
 
-   left = randomInteger(1,  Ncustomers - 1);
-   right = randomInteger(1, Ncustomers - 1);
+   left = randomInteger(2,  Ncustomers - 1);
+   right = randomInteger(2, Ncustomers - 1);
     while (left == right)
-        right = randomInteger(1, Ncustomers - 1);
+        right = randomInteger(2, Ncustomers - 1);
 
     if (left > right)
     {

@@ -6,8 +6,8 @@
 #include <chrono>
 
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-std::random_device rd;
-std::mt19937 gen(seed);
+static std::random_device rd;
+static std::mt19937 gen(seed);
 
 /// <summary>
 /// Generates a random integer in the range [min, max]
