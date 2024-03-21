@@ -201,11 +201,11 @@ void testTSPwithSingleChromosome() {
 }
 
 int main() {
-    loadData("TCB995");
+    loadData("TCB100");
     //(std::vector<uint32_t> customers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t & Fstar, bool verbose = false)
     uint32_t Fstar = UINT32_MAX;
 
-    Chromosome bestChromosomeEver = solveVRP(customers.size(),15, 128, 8, 1024, Fstar, true);
+    Chromosome bestChromosomeEver = solveVRP(customers.size(),12, 64, 8, 1024, Fstar, true);
 #ifndef _DEBUG
     //plot(bestChromosomeEver);
 #endif // !

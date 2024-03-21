@@ -11,18 +11,10 @@
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
 
-#define CH_BAKER2003 1
-#define CH_HO2007 2
-
 //TODO: bu parametreler farklı bir dosyada tanımlanacak
 uint32_t MaxWorkTime = 0;
 uint32_t VehicleCapacity = 0;
 uint32_t minutesPerPackageDelivery = 4;
-
-#define CHROMOSOME_DEFINITION CH_BAKER2003
-
-
-#ifdef CHROMOSOME_DEFINITION == CH_BAKER2003
 
 struct Chromosome {
 	std::vector<uint32_t> genes;
@@ -165,4 +157,3 @@ void initialiseRandomChromosome(Chromosome& c, bool verbose = false)
 	if (verbose) cout << "\t[VRP] Assigned remaining " << numberOfCustomers - customersAssignedSoFar << " customers to last vehicle " << c.Nvehicles << endl;
 	//std::rotate(begin(c.genes), begin(c.genes)+randomInteger(1, numberOfCustomers/2), end(c.genes));
 }
-#endif
