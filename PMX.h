@@ -30,7 +30,7 @@ using namespace std;
 
 inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, const uint32_t& Nvehicles)
 {
-    //static unordered_set<uint32_t> visited(100);
+    static set<uint32_t> visited;
     uint32_t Ncustomers = p1.size();
     /*
     if (p2.size() != Ncustomers)
@@ -62,17 +62,17 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
         for (uint32_t i = 0; i < point1; i++)
         {
             o1[i] = p1[i];
-            //visited.insert(p1[i]);
+            visited.insert(p1[i]);
         }
         for (uint32_t i = point1; i < point2; i++)
         {
             o1[i] = p2[i];
-            //visited.insert(p2[i]);
+            visited.insert(p2[i]);
         }
         for (uint32_t i = point2; i < p1.size(); i++)
         {
             o1[i] = p1[i];
-            //visited.insert(p1[i]);
+            visited.insert(p1[i]);
         }
     }
     else
@@ -80,20 +80,20 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
         for (uint32_t i = 0; i < point1; i++)
         {
             o1[i] = p2[i];
-            //visited.insert(p2[i]);
+            visited.insert(p2[i]);
         }
         for (uint32_t i = point1; i < point2; i++)
         {
             o1[i] = p1[i];
-            //visited.insert(p1[i]);
+            visited.insert(p1[i]);
         }
         for (uint32_t i = point2; i < p1.size(); i++)
         {
             o1[i] = p2[i];
-            //visited.insert(p2[i]);
+            visited.insert(p2[i]);
         }
     }
-    /*
+    
     if (visited.size() != Nvehicles)
     {
         for (uint32_t i = 0; i < p1.size(); i++)
@@ -101,7 +101,7 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
                 o1[i] = p1[i];
             else
                 o1[i] = p2[i];
-    }*/
+    }
 }
 
 inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, vector<uint32_t>& o2)
@@ -153,28 +153,31 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
 
  void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1, bool visited[])
 {
+     if(p1.size() != p2.size())
+         cout << "CATASTROPHIC ERROR: p1.size() != p2.size()" << endl;
+     uint32_t Ncustomers = p2.size();
     //o1 = std::vector<uint32_t>(p1.size());
 
-    if (p1.size() <= 3)
+    if (Ncustomers <= 3)
     {
         if (randomInteger(1, 100) < 50)
         {
-            for (uint32_t i = 0; i < p1.size(); i++)
+            for (uint32_t i = 0; i < Ncustomers; i++)
                 o1[i] = p1[i];
         }
         else
         {
-            for (uint32_t i = 0; i < p1.size(); i++)
+            for (uint32_t i = 0; i < Ncustomers; i++)
                 o1[i] = p2[i];
         }
         return;
     }
 
 
-    uint32_t left = randomInteger(1, p1.size() - 1);
-    uint32_t right = randomInteger(1, p1.size() - 1);
+    uint32_t left = randomInteger(1,  Ncustomers - 1);
+    uint32_t right = randomInteger(1, Ncustomers - 1);
     while (left == right)
-        right = randomInteger(1, p1.size() - 1);
+        right = randomInteger(1, Ncustomers - 1);
     uint32_t k_, p, temp; 
 
     if (left > right)
@@ -199,11 +202,17 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
         //cout << p2[p] << endl;
         if (!visited[p2[p]])
         {
-            o1[k_] = p2[p];
-            k_ = (k_ + 1) % p1.size();
             visited[p2[p]] = true;
+            o1[k_++] = p2[p];
+            //k_++ % p1.size();
+            if(k_ == Ncustomers)
+                k_ = 0;
+            
         }
-        p = (p + 1) % p1.size();
+        //p = (p + 1) % p1.size();
+        p++;
+        if (p == Ncustomers)
+            p = 0;
     }
     // Copy o1tmp to o1, optimize code
     //memset(visited, 0, sizeof(visited));

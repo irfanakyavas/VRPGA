@@ -10,19 +10,24 @@
 
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
-#define Npop_TSP 32
+#define Npop_TSP 16
 
 std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {
     uint32_t Ncustomers = customers.size();
-    uint32_t CustomerMax = maxv(customers) + 1;
+    static uint32_t CustomerMax = 101;
     //alloca()
     //constexpr int v = sizeof(bool)* Npop_TSP * 128 * 100;
     bool *visited = (bool*) alloca(CustomerMax*sizeof(bool));
     memset(visited, 0, CustomerMax *sizeof(bool));
     ChromosomeTSP chromosomes[Npop_TSP];
     ChromosomeTSP new_chromosomes[Npop_TSP];
-    ChromosomeTSP tmp1;
+    for (ChromosomeTSP& c : chromosomes)
+		c = ChromosomeTSP(Ncustomers);
+    for (ChromosomeTSP& c : new_chromosomes)
+        c = ChromosomeTSP(Ncustomers);
+
+    //ChromosomeTSP tmp1;
     ChromosomeTSP bestChromosomeEver(Ncustomers);
     uint32_t bestFitnessEver = UINT_FAST32_MAX, bestFitness = UINT_FAST32_MAX;
     uint32_t i, j, i_max = 0;
@@ -48,7 +53,7 @@ std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32
     if (verbose) cout << "\t\t\t[TSP] Best objective function value in the initial population is " << bestChromosomeEver.fitness << endl;
      
 
-    tmp1.path = vector<uint32_t>(Ncustomers);
+    //tmp1.path = vector<uint32_t>(Ncustomers);
     uint32_t s1, s2, s3, s4, count;
     count = 0;
 
@@ -63,9 +68,9 @@ std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32
             memset(visited, 0, CustomerMax * sizeof(bool));
             crossoverPMX(chromosomes[s1].fitness < chromosomes[s2].fitness ? chromosomes[s1].path : chromosomes[s2].path,
                 chromosomes[s3].fitness < chromosomes[s4].fitness ? chromosomes[s3].path : chromosomes[s4].path,
-                tmp1.path, visited);
+                new_chromosomes[j].path, visited);
 
-            new_chromosomes[j] = tmp1;
+           // new_chromosomes[j] = tmp1;
 
             if (randomInteger(1, 100) < Pmut)
                 mutate(new_chromosomes[j].path);
@@ -83,9 +88,9 @@ std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32
             memset(visited, 0, CustomerMax * sizeof(bool));
             crossoverPMX(new_chromosomes[s1].fitness < new_chromosomes[s2].fitness ? new_chromosomes[s1].path : new_chromosomes[s2].path,
                 new_chromosomes[s3].fitness < new_chromosomes[s4].fitness ? new_chromosomes[s3].path : new_chromosomes[s4].path,
-                tmp1.path, visited);
+                chromosomes[j].path, visited);
 
-            chromosomes[j] = tmp1;
+            //chromosomes[j] = tmp1;
 
             if (randomInteger(1, 100) < Pmut)
                 mutate(chromosomes[j].path);

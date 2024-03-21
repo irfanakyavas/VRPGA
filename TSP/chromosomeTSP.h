@@ -39,7 +39,7 @@ typedef struct ChromosomeTSP
     }
     void initialiseRandomly(std::vector<uint32_t> const& customerPool)
     {
-        this->path = std::vector<uint32_t>(customerPool.size());
+        //this->path = std::vector<uint32_t>(customerPool.size());
         for (uint32_t fi = 0; fi < Ncustomers(); fi++)
             this->path[fi] = customerPool[fi];
         std::shuffle(std::begin(this->path), std::end(this->path), gen);

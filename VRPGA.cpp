@@ -121,10 +121,10 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     {
        // cout << chromosomes[k] << endl;
     }
-    plotChromosomeSerial(fig_initial, bestChromosomeEver, "Initial population best");
+    //plotChromosomeSerial(fig_initial, bestChromosomeEver, "Initial population best");
     for (i = 0; i < Ngen; i++) {
         if (verbose && i % (Ngen / 20) == 0 && i >= 0) {
-            cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar = " << bestFitnessEver << " (";
+            cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar = " << bestFitnessEver << endl;// << " (";
             
             /*
             for(uint32_t k = 1; k < Nvehicles; k++)
@@ -142,8 +142,8 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
             s5 = randomInteger(0, Npop - 1); s6 = randomInteger(0, Npop - 1); s7 = randomInteger(0, Npop - 1); s8 = randomInteger(0, Npop - 1);
 
             Chromosome tmp1(Ncustomers, Nvehicles);
-            Chromosome tmp2(Ncustomers, Nvehicles);
-            Chromosome tmp3(Ncustomers, Nvehicles);
+            //Chromosome tmp2(Ncustomers, Nvehicles);
+            //Chromosome tmp3(Ncustomers, Nvehicles);
             s1 = chromosomes[s1].totalWorkTime < chromosomes[s2].totalWorkTime ? s1 : s2;
             s2 = chromosomes[s3].totalWorkTime < chromosomes[s4].totalWorkTime ? s3 : s4;
             //s5 = chromosomes[s5].totalWorkTime < chromosomes[s6].totalWorkTime ? s5 : s6;
@@ -151,7 +151,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
 
             crossover(chromosomes[s1].genes, chromosomes[s2].genes, tmp1.genes, Nvehicles);
             //crossover(chromosomes[s5].genes, chromosomes[s6].genes, tmp2.genes, Nvehicles);
-            tmp3 = tmp1;//.totalWorkTime < tmp2.totalWorkTime ? tmp1:tmp2;
+            //tmp3 = tmp1;//.totalWorkTime < tmp2.totalWorkTime ? tmp1:tmp2;
             
             if (randomDouble(0,1) <= i/Ngen)
                 mutate(tmp1.genes);
