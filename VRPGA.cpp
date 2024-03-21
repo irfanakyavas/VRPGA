@@ -53,6 +53,7 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
         }
         sorted_lat.emplace_back(Depot.LAT);
         sorted_lon.emplace_back(Depot.LON);
+
         ax_fix->geoplot(sorted_lat, sorted_lon);
         if (first) {
             ax_fix->hold(true);
@@ -67,7 +68,7 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
 
     auto [lon_c, lat_c, names_c] =
         matplot::clear_overlapping_labels(sorted_lonAll, sorted_latAll, sorted_CID, 0.001, 0.001);
-    ax_fix->text(lon_c, lat_c, names_c);
+    //ax_fix->text(lon_c, lat_c, names_c);
 
     ax_fix->title("Tour distance " + matplot::num2str(c.totalWorkTime));
     fh->title(title);
@@ -127,10 +128,12 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     for (i = 0; i < Ngen; i++) {
         if (verbose && i % (Ngen / 20) == 0 && i >= 0) {
             cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar = " << bestFitnessEver << " (";
+            
+            /*
             for(uint32_t k = 1; k < Nvehicles; k++)
 				cout << bestChromosomeEver.workTimeByVehicle[k] << ",";
-			cout << bestChromosomeEver.workTimeByVehicle[Nvehicles] << ")" << endl;
-
+			cout << bestChromosomeEver.workTimeByVehicle[Nvehicles] << ")" << endl;*/
+            
             for (int k = 0; k < 10; k++)
             {
                 cout << chromosomes[k] << endl;
@@ -198,11 +201,11 @@ void testTSPwithSingleChromosome() {
 }
 
 int main() {
-    loadData("TCB100");
+    loadData("TCB995");
     //(std::vector<uint32_t> customers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t & Fstar, bool verbose = false)
     uint32_t Fstar = UINT32_MAX;
 
-    Chromosome bestChromosomeEver = solveVRP(customers.size(),12, 100, 6, 1024, Fstar, true);
+    Chromosome bestChromosomeEver = solveVRP(customers.size(),15, 128, 8, 1024, Fstar, true);
 #ifndef _DEBUG
     //plot(bestChromosomeEver);
 #endif // !
