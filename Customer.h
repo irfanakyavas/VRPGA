@@ -11,9 +11,9 @@ struct Customer {
     double LAT;
     double LON;
     double angleWithDepot = 0.0;
-    uint32_t distanceFromDepot = 0;
+    double distanceFromDepot = 0;
     uint32_t demand = 0;
-    static std::vector<uint32_t> depotDistances;
+    static std::vector<double> depotDistances;
     static std::vector<double> depotAngles;
     static std::vector<uint32_t> customerDemands;
     static std::vector<double> customerLAT;
@@ -21,9 +21,10 @@ struct Customer {
 	static std::vector<uint32_t> customerIDs;
 };
 
-std::vector<std::vector<uint32_t>> distanceMatrix;
+std::vector<std::vector<double>> distanceMatrix;
+std::vector<std::vector<double>> distanceMatrixSorted;
+std::vector<double> depotDistancesSorted;
 std::vector<Customer> customers;
-std::vector<Customer> customersSortedByDepotAngle;
 std::vector<uint32_t> customersSortIndices;
 std::vector<uint32_t> CIDsByAngle(std::vector<double> depotAngles);
 std::vector<uint32_t> CIDsByDepotDistances(std::vector<uint32_t> depotDistances);
@@ -110,7 +111,7 @@ void loadDemandFromCSV(const std::string& filename, std::vector<Customer>& custo
     }
 }
 
-std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
+std::vector<std::vector<double>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
     std::ifstream file(filename);
 
     if (file.is_open()) {
@@ -122,8 +123,8 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
         // status variable for the
         bool currentLineIsDepotDistances = true;
         while (std::getline(file, line)) {
-            std::vector<uint32_t> row;
-            int value;
+            std::vector<double> row;
+            double value;
 
             // Create a stringstream from the line
             std::stringstream ss(line);
@@ -138,7 +139,8 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
                 int i = 0;
                 while (ss >> value)
                 {
-                    customers[i].distanceFromDepot = value / 60000;
+                    //customers[i].distanceFromDepot = value / 60000;
+                    customers[i].distanceFromDepot = value;
                     Customer::depotDistances.push_back(customers[i++].distanceFromDepot);
                     ss.ignore();
                 }
@@ -152,7 +154,8 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
                 ss >> value;
                 ss.ignore();
                 while (ss >> value) {
-                    row.push_back(value / 60000);
+                    //row.push_back(value / 60000);
+                    row.push_back(value);
                     // Ignore the tab character
                     ss.ignore();
                 }
@@ -170,24 +173,38 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
 
 void loadData(std::string caseStr, bool verbose = false)
 {
-    loadCustomersFromCSV("C:\\bitirme_data\\New_T\\"+caseStr+"\\points.csv");
-    loadDemandFromCSV("C:\\bitirme_data\\New_T\\" + caseStr + "\\Npackages.txt", customers);
-    loadDistanceMatrixFromTSV("C:\\bitirme_data\\New_T\\" + caseStr + "\\Mdist.tsv", customers);
-    customersSortedByDepotAngle = customers;
-    std::sort(customersSortedByDepotAngle.begin(), customersSortedByDepotAngle.end());
-    customersSortIndices = CIDsByAngle(Customer::depotAngles);
-    //customersSortIndices = CIDsByDepotDistances(Customer::depotDistances);
+    //loadCustomersFromCSV("C:\\bitirme_data\\New_T\\"+caseStr+"\\points.csv");
+    //loadDemandFromCSV("C:\\bitirme_data\\New_T\\" + caseStr + "\\Npackages.txt", customers);
+    //loadDistanceMatrixFromTSV("C:\\bitirme_data\\New_T\\" + caseStr + "\\Mdist.tsv", customers);
+    loadCustomersFromCSV("C:\\bitirme_data\\New_D\\" + caseStr + "\\points.csv");
+    loadDemandFromCSV("C:\\bitirme_data\\New_D\\" + caseStr + "\\Npackages.txt", customers);
+    loadDistanceMatrixFromTSV("C:\\bitirme_data\\New_D\\" + caseStr + "\\Mdist.tsv", customers);
 
+    customersSortIndices = CIDsByAngle(Customer::depotAngles);
+
+    for(uint32_t i = 0; i < customers.size(); i++)
+    {
+        depotDistancesSorted.push_back(Customer::depotDistances[customersSortIndices[i]]);
+	}
+
+    distanceMatrixSorted = std::vector<std::vector<double>>();
+    for (uint32_t i = 0; i < customers.size(); i++)
+    {
+        std::vector<double> row(customers.size());
+        for (uint32_t j = 0; j < customers.size(); j++)
+            row[j] = distanceMatrix[customersSortIndices[i]][customersSortIndices[j]];
+        distanceMatrixSorted.push_back(row);
+    }
     if (verbose) for (const Customer& c : customers) std::cout << c << std::endl;
     std::cout << "[VRP] Data loaded for case " << caseStr << std::endl;
 }
 
-inline uint32_t Distance(uint32_t x, uint32_t y)
+inline double Distance(uint32_t x, uint32_t y)
 {
     return distanceMatrix[customersSortIndices[x]][customersSortIndices[y]];
 }
 
-inline uint32_t Distance(uint32_t x, uint32_t y, std::vector<uint32_t> indices, std::vector<std::vector<uint32_t>>& distanceMatrix)
+inline double Distance(uint32_t x, uint32_t y, std::vector<uint32_t> indices, std::vector<std::vector<double>>& distanceMatrix)
 {
     return distanceMatrix[indices[x]][indices[y]];
 }

@@ -28,7 +28,53 @@ using namespace matplot;
 matplot::figure_handle fig_initial = matplot::figure(true);
 matplot::figure_handle fig_currentBest = matplot::figure(true);
 
-void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, string title) {
+
+void plotChromosomeCartesian(matplot::figure_handle& fh, const Chromosome& c, std::string title) {
+    matplot::axes_handle ax_fix;
+    ax_fix = fh->current_axes();
+    ax_fix->clear();
+    //ax_fix->limits(minv(Customer::customerLAT) - 0.01, maxv(Customer::customerLAT) + 0.01, minv(Customer::customerLON) - 0.01, maxv(Customer::customerLON) + 0.01);
+    bool first = true;
+    std::vector<double> sorted_lonAll;
+    std::vector<double> sorted_latAll;
+    std::vector<std::string> sorted_CID;
+
+    for (uint32_t i = 1; i <= c.Nvehicles; i++) {
+        std::vector<double> sorted_lat;
+        std::vector<double> sorted_lon;
+        for (int j = c.customersVisitedByVehicle[i].size() - 1; j >= 0; j--) {
+            sorted_lat.emplace_back(Customer::customerLAT[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
+            sorted_lon.emplace_back(Customer::customerLON[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
+            sorted_lonAll.emplace_back(Customer::customerLON[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
+            sorted_latAll.emplace_back(Customer::customerLAT[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
+            sorted_CID.emplace_back(std::to_string(c.customersVisitedByVehicle[i][j] + 1));
+        }
+        sorted_lat.emplace_back(Depot.LAT);
+        sorted_lon.emplace_back(Depot.LON);
+
+        ax_fix->plot(sorted_lat, sorted_lon);
+        if (first) {
+            ax_fix->hold(true);
+            first = false;
+        }
+    }
+    sorted_latAll.emplace_back(Depot.LAT);
+    sorted_lonAll.emplace_back(Depot.LON);
+    sorted_CID.push_back("0");
+
+    ax_fix->scatter(sorted_latAll, sorted_lonAll);
+
+    auto [lon_c, lat_c, names_c] =
+        matplot::clear_overlapping_labels(sorted_lonAll, sorted_latAll, sorted_CID, 5, 5);
+    ax_fix->text(lon_c, lat_c, names_c);
+
+    ax_fix->title("Tour distance " + matplot::num2str(c.totalWorkTime));
+    fh->title(title);
+    ax_fix->hold(false);
+    ax_fix->draw();
+}
+
+void plotChromosomeWorldmap(matplot::figure_handle& fh, const Chromosome& c, std::string title) {
     matplot::axes_handle ax_fix;
     ax_fix = fh->current_axes();
     ax_fix->clear();
@@ -36,7 +82,7 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
     bool first = true;
     std::vector<double> sorted_lonAll;
     std::vector<double> sorted_latAll;
-    std::vector<string> sorted_CID;
+    std::vector<std::string> sorted_CID;
 
     for (uint32_t i = 1; i <= c.Nvehicles; i++) {
         std::vector<double> sorted_lat;
@@ -46,7 +92,7 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
             sorted_lon.emplace_back(Customer::customerLON[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
             sorted_lonAll.emplace_back(Customer::customerLON[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
             sorted_latAll.emplace_back(Customer::customerLAT[customersSortIndices[c.customersVisitedByVehicle[i][j]]]);
-            sorted_CID.emplace_back(to_string(c.customersVisitedByVehicle[i][j]+1));
+            sorted_CID.emplace_back(std::to_string(c.customersVisitedByVehicle[i][j]+1));
         }
         sorted_lat.emplace_back(Depot.LAT);
         sorted_lon.emplace_back(Depot.LON);
@@ -65,7 +111,7 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
 
     auto [lon_c, lat_c, names_c] =
         matplot::clear_overlapping_labels(sorted_lonAll, sorted_latAll, sorted_CID, 0.001, 0.001);
-    //ax_fix->text(lon_c, lat_c, names_c);
+    ax_fix->text(lon_c, lat_c, names_c);
 
     ax_fix->title("Tour distance " + matplot::num2str(c.totalWorkTime));
     fh->title(title);
@@ -77,17 +123,17 @@ void plotChromosomeSerial(matplot::figure_handle& fh, const Chromosome& c, strin
 
 Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {
-    if (verbose) cout << "[VRP] VRP solver initialising for " << Ncustomers << " customers and " << Nvehicles << " vehicles" << endl;
+    if (verbose) std::cout << "[VRP] VRP solver initialising for " << Ncustomers << " customers and " << Nvehicles << " vehicles" << std::endl;
     
     std::vector<Chromosome> chromosomes(Npop, Chromosome(Ncustomers, Nvehicles));
-    std::unordered_set<vector<uint32_t>, VectorHash> chromosome_genes;
+    std::unordered_set<std::vector<uint32_t>, VectorHash> chromosome_genes;
 
-    if (verbose) cout << "[VRP] Generating random initial population..." << endl;
+    if (verbose) std::cout << "[VRP] Generating random initial population..." << std::endl;
     int n = 0;
     while(n < Npop)
     {
 		chromosomes[n] = Chromosome(Ncustomers, Nvehicles);
-        initialiseRandomChromosome(chromosomes[n], true);
+        initialiseRandomChromosome(chromosomes[n], false);
         auto r = chromosome_genes.insert(chromosomes[n].genes);
         if (r.second == true)
             n++;
@@ -96,13 +142,13 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     uint32_t bestFitnessEver = UINT_FAST32_MAX, bestFitness = UINT_FAST32_MAX;
     uint32_t i, j, i_max = 0;
 
-    if (verbose) cout << "[VRP] Calculating initial population fitness..." << endl;
+    if (verbose) std::cout << "[VRP] Calculating initial population fitness..." << std::endl;
     int tmp = 1;
     for (i = 0; i < Npop; i++)
     {
         if (verbose && i % (Npop / 10) == 0 && i > 0)
         {
-			cout << "\t* Fitness calculation of initial population " << tmp*10 << "%." << endl;
+            std::cout << "\t* Fitness calculation of initial population " << tmp*10 << "%." << std::endl;
             tmp++;
         }
         uint32_t currentFitness = chromosomes[i].calculateFitness();
@@ -115,16 +161,18 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     
     bestChromosomeEver = chromosomes[i_max];
     bestFitnessEver = bestChromosomeEver.totalWorkTime;
-    if (verbose) cout << "[VRP] Best objective function value in the initial population is " << bestChromosomeEver.totalWorkTime << endl;
+    if (verbose) std::cout << "[VRP] Best objective function value in the initial population is " << bestChromosomeEver.totalWorkTime << " unfitness=" << bestChromosomeEver.unfitness << std::endl;
 
     for (int k = 0; k < 10; k++)
     {
        // cout << chromosomes[k] << endl;
     }
-    //plotChromosomeSerial(fig_initial, bestChromosomeEver, "Initial population best");
+#ifndef _DEBUG
+    plotChromosomeCartesian(fig_initial, bestChromosomeEver, "Initial population best");
+#endif // !
     for (i = 0; i < Ngen; i++) {
         if (verbose && i % (Ngen / 20) == 0 && i >= 0) {
-            cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar = " << bestFitnessEver << endl;// << " (";
+            std::cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar= " << bestFitnessEver << " unfitness=" << bestChromosomeEver.unfitness << std::endl;// << " (";
             
             /*
             for(uint32_t k = 1; k < Nvehicles; k++)
@@ -175,7 +223,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
                 initialiseRandomChromosome(chromosomes[j]);
                 chromosome_genes.insert(chromosomes[j].genes);
 #ifndef _DEBUG
-                //plotChromosomeSerial(fig_currentBest, bestChromosomeEver, "Current Best Solution");
+                plotChromosomeCartesian(fig_currentBest, bestChromosomeEver, "Current Best Solution");
 #endif // !
             }
         }
@@ -183,7 +231,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     }
     
 
-    cout << "[VRP] VRP solving with GA complete, Fstar=" << bestChromosomeEver.totalWorkTime << endl;
+    std::cout << "[VRP] VRP solving with GA complete, Fstar=" << bestChromosomeEver.totalWorkTime << std::endl;
     Fstar = bestChromosomeEver.totalWorkTime;
     return bestChromosomeEver;
 }
@@ -193,19 +241,19 @@ void testTSPwithSingleChromosome() {
     initialiseRandomChromosome(c1, true);
 
     c1.calculateFitness(true);
-    //plotChromosomeSerial(fig_currentBest,c1, "");
+    //plotChromosomeWorldmap(fig_currentBest,c1, "");
     //matplot::show();
 }
 
 
-
+#include <chrono>
+#include "RandomUtils.h"
 int main() {
-
-
-    loadData("TCB100");
+    loadData("CMT12");
+    std::cout << "Random pool init completed" << std::endl;
     uint32_t Fstar = UINT32_MAX;
 
-    Chromosome bestChromosomeEver = solveVRP(customers.size(),10, 32, 8, 1024, Fstar, true);
+    Chromosome bestChromosomeEver = solveVRP(customers.size(),10, 64, 8, 1024, Fstar, true);
 #ifndef _DEBUG
     //plot(bestChromosomeEver);
 #endif // !
