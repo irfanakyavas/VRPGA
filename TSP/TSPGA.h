@@ -13,7 +13,7 @@
 #define Npop_TSP 32
 #include <omp.h>
 
-std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32_t Pmut, uint32_t Ngen, double& Fstar, bool verbose = false)
+std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {
     static std::mt19937 _gen(seed);
     std::uniform_int_distribution<uint32_t> dis(0, Npop_TSP - 1);
@@ -36,7 +36,7 @@ std::vector<uint32_t> solveTSPforVehicle(std::vector<uint32_t> customers, uint32
 
     //ChromosomeTSP tmp1;
     ChromosomeTSP bestChromosomeEver(Ncustomers);
-    double bestFitnessEver = DBL_MAX, bestFitness = DBL_MAX;
+    uint32_t bestFitnessEver = UINT32_MAX, bestFitness = UINT32_MAX;
     int i, j, i_max = 0;
 
     if (verbose) std::cout << "\t\t\t[TSP] Generating random initial population..." << std::endl;

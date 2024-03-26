@@ -16,30 +16,29 @@
 
 //TODO: bu parametreler farklı bir dosyada tanımlanacak
 uint32_t MAX_WORK_TIME = INT32_MAX;
-int VEHICLE_CAPACITY = 200;
-double minutesPerPackageDelivery = 0.0;
+uint32_t VEHICLE_CAPACITY = 30;
+double minutesPerPackageDelivery = 4.0;
 
 struct Chromosome {
 	std::vector<uint32_t> genes;
 
 	std::vector<std::vector<uint32_t>> customersVisitedByVehicle;
-	std::vector<double> workTimeByVehicle;
-	std::vector<int> packagesDeliveredByVehicle;
+	std::vector<uint32_t> workTimeByVehicle;
+	std::vector<uint32_t> packagesDeliveredByVehicle;
 
 	std::vector<std::vector<double>> vehiclePoints;
 	std::vector<double> vehicleAngles;
 
-	double totalWorkTime = 0.0;
+	uint32_t totalWorkTime = 0;
 	uint32_t totalPackagesDelivered = 0;
 	uint32_t Nvehicles = 0;
 	double unfitness = 0.0;
 
 	Chromosome(uint32_t Ncustomers, uint32_t Nvehicles) {
 		this->genes = std::vector<uint32_t>(Ncustomers);
-
 		this->customersVisitedByVehicle = std::vector<std::vector<uint32_t>>(Nvehicles + 1);
-		this->workTimeByVehicle = std::vector<double>(Nvehicles+1, 0);
-		this->packagesDeliveredByVehicle = std::vector<int>(Nvehicles+1, 0);
+		this->workTimeByVehicle = std::vector<uint32_t>(Nvehicles+1, 0);
+		this->packagesDeliveredByVehicle = std::vector<uint32_t>(Nvehicles+1, 0);
 		this->Nvehicles = Nvehicles;
 		this->totalWorkTime = 0;
 		this->totalPackagesDelivered = 0;
@@ -57,14 +56,14 @@ struct Chromosome {
 
 	uint32_t calculateFitness(bool verbose = false)
 	{
+		uint32_t i = 0;
 		/*
 		uint32_t NvehiclesReal = maxv(genes);
 		if(NvehiclesReal != Nvehicles)
 		{
 			cout << "ERROR: NvehiclesReal != Nvehicles" << endl;
 		}*/
-		unfitness = 0.0;
-		for (uint32_t i = 0; i < Ncustomers(); i++)
+		for (i = 0; i < Ncustomers(); i++)
 		{
 			/*
 			if (genes[i] == 0)
@@ -74,27 +73,24 @@ struct Chromosome {
 			*/
 			customersVisitedByVehicle[genes[i]].push_back(i);
 			packagesDeliveredByVehicle[genes[i]] += Customer::customerDemands[customersSortIndices[i]];
-			workTimeByVehicle[genes[i]] += Customer::customerDemands[customersSortIndices[i]] * minutesPerPackageDelivery;
-			totalWorkTime += Customer::customerDemands[customersSortIndices[i]] * minutesPerPackageDelivery;
+			workTimeByVehicle[genes[i]] += (uint32_t)round(Customer::customerDemands[customersSortIndices[i]] * minutesPerPackageDelivery);
+			totalWorkTime += (uint32_t)round(Customer::customerDemands[customersSortIndices[i]] * minutesPerPackageDelivery);
 			totalPackagesDelivered += Customer::customerDemands[customersSortIndices[i]];
 		}
-		double timeSpent = 0.0;
-		for (int i = 1; i <= Nvehicles; i++)
+		for (i = 1; i <= Nvehicles; i++)
 		{
-			timeSpent = 0.0;
 			if (verbose) std::cout << std::endl << "\t\t[TSP] Solving TSP for vehicle " << i << std::endl;
-			customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 128, timeSpent, verbose);
-			workTimeByVehicle[i] += timeSpent;
-			totalWorkTime += timeSpent;
-			unfitness += (packagesDeliveredByVehicle[i] - VEHICLE_CAPACITY) > 0 ? ((packagesDeliveredByVehicle[i] - VEHICLE_CAPACITY) / ((double)VEHICLE_CAPACITY)) : 0.0;
-			unfitness += (workTimeByVehicle[i] - MAX_WORK_TIME) > 0 ? ((workTimeByVehicle[i] - MAX_WORK_TIME) / ((double)MAX_WORK_TIME)) : 0.0;
+			customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 128, workTimeByVehicle[i], verbose);
+			totalWorkTime += workTimeByVehicle[i];
+			unfitness = (packagesDeliveredByVehicle[i] > VEHICLE_CAPACITY) ? ((packagesDeliveredByVehicle[i] - VEHICLE_CAPACITY) / ((double)VEHICLE_CAPACITY)) : 0.0;
+			unfitness += (workTimeByVehicle[i] > MAX_WORK_TIME) ? ((workTimeByVehicle[i] - MAX_WORK_TIME) / ((double)MAX_WORK_TIME)) : 0.0;
 		}
 
 		if (verbose) std::cout << std::endl << "\t\t[VRP] All TSP instances solved for chromosome" << std::endl;
 		if (verbose) std::cout << "\t\t\tTotal Work Time=" << totalWorkTime << " Total Packages Delivered=" << totalPackagesDelivered << std::endl;
 		//vehicleAngles = std::vector<double>(Nvehicles);
 		//vehiclePoints = std::vector<vector<double>>(Nvehicles + 1);
-		for (uint32_t i = 1; i <= Nvehicles; i++)
+		for (i = 1; i <= Nvehicles; i++)
 		{
 			//double sumLat = 0;
 			//double sumLon = 0;

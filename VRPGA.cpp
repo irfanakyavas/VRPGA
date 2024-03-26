@@ -168,7 +168,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
        // cout << chromosomes[k] << endl;
     }
 #ifndef _DEBUG
-    plotChromosomeCartesian(fig_initial, bestChromosomeEver, "Initial population best");
+    plotChromosomeWorldmap(fig_initial, bestChromosomeEver, "Initial population best");
 #endif // !
     for (i = 0; i < Ngen; i++) {
         if (verbose && i % (Ngen / 20) == 0 && i >= 0) {
@@ -223,7 +223,7 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
                 initialiseRandomChromosome(chromosomes[j]);
                 chromosome_genes.insert(chromosomes[j].genes);
 #ifndef _DEBUG
-                plotChromosomeCartesian(fig_currentBest, bestChromosomeEver, "Current Best Solution");
+                plotChromosomeWorldmap(fig_currentBest, bestChromosomeEver, "Current Best Solution");
 #endif // !
             }
         }
@@ -249,7 +249,7 @@ void testTSPwithSingleChromosome() {
 #include <chrono>
 #include "RandomUtils.h"
 int main() {
-    loadData("CMT12");
+    loadData("TCB100");
     std::cout << "Random pool init completed" << std::endl;
     uint32_t Fstar = UINT32_MAX;
 

@@ -11,19 +11,18 @@
 typedef struct ChromosomeTSP
 {
     std::vector<uint32_t> path;
-    double fitness = DBL_MAX;
+    uint32_t fitness = UINT32_MAX;
 
     uint32_t calculateFitness()
     {
-        static std::vector<std::vector<double>> dists = distanceMatrixSorted;
-        static std::vector<double> depotDists = depotDistancesSorted;
+        static std::vector<std::vector<uint32_t>> dists = distanceMatrixSorted;
+        static std::vector<uint32_t> depotDists = depotDistancesSorted;
 
         fitness = depotDists[path[0]];
         for (uint32_t fi = 0; fi < Ncustomers() - 1; fi++)
         {
             fitness += dists[path[fi]][path[fi + 1]];
         }
-        fitness += depotDists[path[Ncustomers()-1]];
         return fitness;
     }
 

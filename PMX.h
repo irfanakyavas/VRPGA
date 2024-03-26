@@ -154,8 +154,8 @@ inline void crossoverFull(const std::vector<uint32_t>& p1, const std::vector<uin
 #define vcontains(vec, x) std::find(vec.begin(), vec.end(), x) != vec.end()
 
 void crossoverSCX(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1) {
-    static std::vector<std::vector<double>> dists = distanceMatrixSorted;
-    static std::vector<double> depotDists = depotDistancesSorted;
+    static std::vector<std::vector<uint32_t>> dists = distanceMatrixSorted;
+    static std::vector<uint32_t> depotDists = depotDistancesSorted;
     uint32_t Ncustomers = p1.size();
     uint32_t i1 = 1, i2 = 1 , j = 1, opt1, opt2;
     o1[0] = p1[0];
