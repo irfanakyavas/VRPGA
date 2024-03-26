@@ -1,6 +1,6 @@
 #pragma once
-#pragma comment(linker, "/STACK:4000000000")
-#pragma comment(linker, "/HEAP:400000000")
+//#pragma comment(linker, "/STACK:4000000000")
+//#pragma comment(linker, "/HEAP:400000000")
 
 #include <algorithm>
 #include <execution>
@@ -23,14 +23,13 @@
 #define USE_PMX
 
 #ifdef USE_PMX
-using namespace std;
 
 #include <map>
 #include <set>
 
-inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, const uint32_t& Nvehicles)
+inline void crossover(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1, const uint32_t& Nvehicles)
 {
-    static set<uint32_t> visited;
+    static std::set<uint32_t> visited;
     uint32_t Ncustomers = p1.size();
     /*
     if (p2.size() != Ncustomers)
@@ -38,7 +37,7 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
         cout << "PMX: p1 and p2 have different sizes" << endl;
         exit(-1);
     }*/
-    o1 = vector<uint32_t>(Ncustomers);
+    o1 = std::vector<uint32_t>(Ncustomers);
 
     uint32_t point1 = randomInteger(1, Ncustomers - 1);
     uint32_t point2 = point1;
@@ -93,7 +92,7 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
             visited.insert(p2[i]);
         }
     }
-    
+
     if (visited.size() != Nvehicles)
     {
         for (uint32_t i = 0; i < p1.size(); i++)
@@ -105,16 +104,16 @@ inline void crossover(const vector<uint32_t>& p1, const vector<uint32_t>& p2, ve
     visited.clear();
 }
 
-inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2, vector<uint32_t>& o1, vector<uint32_t>& o2)
+inline void crossoverFull(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1, std::vector<uint32_t>& o2)
 {
     uint32_t Ncustomers = p1.size();
     if (p2.size() != Ncustomers)
     {
-        cout << "PMX: p1 and p2 have different sizes" << endl;
+        std::cout << "PMX: p1 and p2 have different sizes" << std::endl;
         exit(-1);
     }
-    o1 = vector<uint32_t>(Ncustomers);
-    o2 = vector<uint32_t>(Ncustomers);
+    o1 = std::vector<uint32_t>(Ncustomers);
+    o2 = std::vector<uint32_t>(Ncustomers);
 
     uint32_t point1 = randomInteger(1, Ncustomers - 3);
     uint32_t point2 = point1;
@@ -132,7 +131,7 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
     // p2 = 4   
     // p1 = 1
     // 
-    vector<uint32_t> temp_section(point2 - point1 + 1);
+    std::vector<uint32_t> temp_section(point2 - point1 + 1);
 
     for (uint32_t i = 0; i < point1; i++)
     {
@@ -149,74 +148,89 @@ inline void crossoverFull(const vector<uint32_t>& p1, const vector<uint32_t>& p2
             o2[i] = p2[i];
     }
 }
+#include<unordered_set>
+#define minv(vec) *std::min_element(vec.begin(), vec.end())
+#define maxv(vec) *std::max_element(vec.begin(), vec.end())
+#define vcontains(vec, x) std::find(vec.begin(), vec.end(), x) != vec.end()
 
-#define PMX_SECTION_WIDTH p1.size()/2
-
- void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1, bool visited[])
-{
-     static uint32_t left, k_, p, temp, right;
-     uint32_t Ncustomers = p2.size();
-     //if(p1.size() != p2.size())
-     //    cout << "CATASTROPHIC ERROR: p1.size() != p2.size()" << endl;
-
-    if (Ncustomers <= 2)
+void crossoverSCX(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1) {
+    static std::vector<std::vector<uint32_t>> dists = distanceMatrixSorted;
+    static std::vector<uint32_t> depotDists = depotDistancesSorted;
+    uint32_t Ncustomers = p1.size();
+    uint32_t i1 = 1, i2 = 1 , j = 1, opt1, opt2;
+    o1[0] = p1[0];
+    for (; j < Ncustomers; j++)
     {
-        cout << "CATASTROPHIC ERROR " << Ncustomers << " Customers assigned!" << endl;
-        if (randomInteger(1, 100) < 50)
+        opt1 = p1[i1++ % Ncustomers];
+        if (vcontains(o1, opt1))
         {
-            for (uint32_t i = 0; i < Ncustomers; i++)
-                o1[i] = p1[i];
+            for(; vcontains(o1, opt1); i1++)
+				opt1 = p1[i1 % Ncustomers];
         }
-        else
+        if (j == Ncustomers - 1)
         {
-            for (uint32_t i = 0; i < Ncustomers; i++)
-                o1[i] = p2[i];
+            opt2 = p2[i2++ % Ncustomers];
+            if (vcontains(o1, opt2))
+            {
+                for (; vcontains(o1, opt2); i2++)
+                    opt2 = p2[i2 % Ncustomers];
+            }
+            opt1 = dists[o1[j - 1]][opt1] < dists[o1[j - 1]][opt2] ? opt1 : opt2;
         }
-        return;
+        o1[j] = opt1;
     }
+}
+ void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1)
+{
+    static std::mt19937 _gen(seed);
+    static constexpr uint_fast32_t sizeof_visited = 100 * sizeof(uint_fast16_t);
+    uint_fast16_t* visited = (uint_fast16_t*) _alloca(sizeof_visited);
+    uint32_t left, k_, p, right;
+    uint32_t Ncustomers = p2.size();
+    std::uniform_int_distribution<uint32_t> dis(1, Ncustomers - 1);
 
+    memset(visited, 0, sizeof_visited);
 
-   left = randomInteger(2,  Ncustomers - 1);
-   right = randomInteger(2, Ncustomers - 1);
+    left = dis(_gen);
+    right = dis(_gen);
     while (left == right)
-        right = randomInteger(2, Ncustomers - 1);
+        right = dis(_gen);
 
     if (left > right)
-    {
-        temp = left;
-        left = right;
-        right = temp;
-    }
+        std::swap(left, right);
 
-    // <= right?
+    std::copy(p1.begin() + left, p1.begin() + right + 1, o1.begin() + left);
     for (k_ = left; k_ <= right; k_++)
-    {
-        o1[k_] = p1[k_];
-        visited[p1[k_]] = true;
-    }
+        visited[p1[k_]] = 1;
+
     right++;
-    //k_ = (right + 1) % p1.size();
     k_ = right < Ncustomers ? right : right - Ncustomers;
     p = k_;
-
+    /*
+    for (p = 0; p < Ncustomers; p++)
+    {
+        if (visited[p2[p]] == 0)
+        {
+            visited[p2[p]] = 1;
+            o1[k_++] = p2[p];
+            k_ = k_ == Ncustomers ? 0 : k_;
+        }
+    }*/
+    
     while (k_ != left)
     {
-        //cout << p2[p] << endl;
-        if (!visited[p2[p]])
+        //std::cout << p2[p] << std::endl;
+        if (visited[p2[p]] == 0)
         {
-            visited[p2[p]] = true;
+            visited[p2[p]] = 1;
             o1[k_++] = p2[p];
-            //k_++ % p1.size();
             if(k_ == Ncustomers)
                 k_ = 0;
             
         }
-        //p = (p + 1) % p1.size();
         p++;
         if (p == Ncustomers)
             p = 0;
     }
-    // Copy o1tmp to o1, optimize code
-    //memset(visited, 0, sizeof(visited));
 }
 #endif

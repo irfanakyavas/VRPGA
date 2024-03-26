@@ -28,44 +28,7 @@ inline void rotate_array(std::vector<uint32_t> arr, int n, int shift) {
     }
 }
 
-#ifndef USE_NEW_MUTATE
 inline void mutate(std::vector<uint32_t> &p1)
 {
-    uint32_t Ncustomers = p1.size();
-    uint32_t l_mut, r_mut, stemp;
-
-    l_mut = randomInteger(0, Ncustomers-1);
-    r_mut = randomInteger(0, Ncustomers-1);
-
-    stemp = p1[l_mut];
-    p1[l_mut] = p1[r_mut];
-    p1[r_mut] = stemp;
+    std::swap(p1[randomInteger(0, p1.size() -1)], p1[randomInteger(0, p1.size() -1)]);
 }
-#endif
-
-#ifdef USE_NEW_MUTATE
-inline void mutate(vector<uint32_t> p1)
-{
-    uint32_t Ncustomers = p1.size();
-    uint32_t l_mut, r_mut, N_opt, stemp;
-    l_mut = 0;
-    r_mut = 0;
-
-    while (l_mut == r_mut)
-	{
-		l_mut = randomInteger(0, Ncustomers);
-		r_mut = randomInteger(0, Ncustomers);
-	}
-
-    if (l_mut > r_mut)
-    {
-        stemp = l_mut;
-        l_mut = r_mut;
-        r_mut = stemp;
-    }
-
-    N_opt = r_mut - l_mut;
-
-    rotate_array(&p1[l_mut], N_opt, 1);
-}
-#endif

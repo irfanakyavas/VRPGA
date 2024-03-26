@@ -53,5 +53,8 @@
     <ClInclude Include="VRPSolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="randpool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

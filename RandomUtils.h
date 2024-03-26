@@ -4,9 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <chrono>
-
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-static std::random_device rd;
 static std::mt19937 gen(seed);
 
 /// <summary>

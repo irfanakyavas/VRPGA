@@ -30,7 +30,7 @@ std::vector<uint32_t> Customer::customerIDs;
 
 std::vector<uint32_t> CIDsByDepotDistances(std::vector<uint32_t> depotDistances)
 {
-    std::multimap<uint32_t, std::uint32_t> mm;
+    std::multimap<uint32_t, uint32_t> mm;
     for (std::uint32_t i = 0; i != depotDistances.size(); ++i)
         mm.insert({ depotDistances[i], i });
 
