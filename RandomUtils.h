@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <chrono>
 unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+
 static std::mt19937 gen(seed);
 
 /// <summary>
@@ -18,8 +19,8 @@ uint32_t randomInteger(uint32_t min, uint32_t max)
 	std::uniform_int_distribution<uint32_t> dis(min, max);
 	return dis(gen);
 }
-double randomDouble(double min, double max)
+float randomFloat(float min, float max)
 {
-	std::uniform_real_distribution<double> dis(min, max);
+	std::uniform_real_distribution<float> dis(min, max);
 	return dis(gen);
 }

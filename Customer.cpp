@@ -4,38 +4,39 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "defines.h"
 
 struct Customer {
-    uint32_t CID = UINT32_MAX;
-    double LAT;
-    double LON;
-    double angleWithDepot = 0.0;
-    uint32_t distanceFromDepot = 0;
-    uint32_t demand = 0;
-    bool isDepot = false;
-    static std::vector<uint32_t> depotDistances;
-    static std::vector<double> depotAngles;
-    static std::vector<uint32_t> customerDemands;
-    static std::vector<double> customerLAT;
-    static std::vector<double> customerLON;
-    static std::vector<uint32_t> customerIDs;
+    T_CUSTOMERID CID = MAX_CID;
+    float LAT;
+    float LON;
+    float angleWithDepot = 0.0;
+    T_DIST distanceFromDepot = 0;
+    T_DEMAND demand = 0;
+    static std::vector<T_DIST> depotDistances;
+    static std::vector<float> depotAngles;
+    static std::vector<T_DEMAND> customerDemands;
+    static std::vector<float> customerLAT;
+    static std::vector<float> customerLON;
+    static std::vector<T_CUSTOMERID> customerIDs;
 };
-std::vector<uint32_t> Customer::depotDistances;
-std::vector<double> Customer::depotAngles;
-std::vector<uint32_t> Customer::customerDemands;
-std::vector<double> Customer::customerLAT;
-std::vector<double> Customer::customerLON;
-std::vector<uint32_t> Customer::customerIDs;
+
+std::vector<T_DIST> Customer::depotDistances;
+std::vector<float> Customer::depotAngles;
+std::vector<T_DEMAND> Customer::customerDemands;
+std::vector<float> Customer::customerLAT;
+std::vector<float> Customer::customerLON;
+std::vector<T_CUSTOMERID> Customer::customerIDs;
 
 
-std::vector<uint32_t> CIDsByDepotDistances(std::vector<uint32_t> depotDistances)
+std::vector<T_CUSTOMERID> CIDsByDepotDistances(std::vector<T_DIST> depotDistances)
 {
-    std::multimap<uint32_t, uint32_t> mm;
+    std::multimap<T_DIST, T_CUSTOMERID> mm;
     for (std::uint32_t i = 0; i != depotDistances.size(); ++i)
         mm.insert({ depotDistances[i], i });
 
-    std::vector<uint32_t> sortedAngles;
-    std::vector<std::uint32_t> indices;
+    std::vector<T_DIST> sortedAngles;
+    std::vector<T_CUSTOMERID> indices;
     for (const auto& kv : mm) {
         sortedAngles.push_back(kv.first);
         indices.push_back(kv.second);
@@ -43,14 +44,14 @@ std::vector<uint32_t> CIDsByDepotDistances(std::vector<uint32_t> depotDistances)
     return indices;
 }
 
-std::vector<uint32_t> CIDsByAngle(std::vector<double> depotAngles)
+std::vector<T_CUSTOMERID> CIDsByAngle(std::vector<float> depotAngles)
 {
-    std::multimap<double, std::uint32_t> mm;
+    std::multimap<float, T_CUSTOMERID> mm;
     for (std::uint32_t i = 0; i != depotAngles.size(); ++i)
         mm.insert({ depotAngles[i], i });
 
-    std::vector<double> sortedAngles;
-    std::vector<std::uint32_t> indices;
+    std::vector<float> sortedAngles;
+    std::vector<T_CUSTOMERID> indices;
     for (const auto& kv : mm) {
         sortedAngles.push_back(kv.first);
         indices.push_back(kv.second);

@@ -332,7 +332,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CallingConvention>FastCall</CallingConvention>
@@ -347,6 +347,10 @@
       <AdditionalDependencies>nodesoup.lib;matplot.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>2000000000</StackReserveSize>
       <StackCommitSize>2000000000</StackCommitSize>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <FixedBaseAddress>true</FixedBaseAddress>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugWithMatplotPlusPlus|x64'">
@@ -394,13 +398,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Customer.cpp" />
+    <ClCompile Include="simd_memset.h" />
     <ClCompile Include="VRPGA.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChromosomeBaker2003.h" />
     <ClInclude Include="Customer.h" />
     <ClInclude Include="randpool.h" />
-    <ClInclude Include="Parameters.h" />
+    <ClInclude Include="defines.h" />
     <ClInclude Include="PMX.h" />
     <ClInclude Include="RandomUtils.h" />
     <ClInclude Include="TSP\chromosomeTSP.h" />

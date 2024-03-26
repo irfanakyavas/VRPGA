@@ -4,7 +4,7 @@
 #include <numeric>
 #include <vector>
 #include "RandomUtils.h"
-
+#include "defines.h"
 
 size_t c_gcd(size_t a, size_t b) { return b == 0 ? a : c_gcd(b, a % b); };
 
@@ -28,7 +28,7 @@ inline void rotate_array(std::vector<uint32_t> arr, int n, int shift) {
     }
 }
 
-inline void mutate(std::vector<uint32_t> &p1)
+inline void mutate(std::vector<T_CUSTOMERID> &p1)
 {
     std::swap(p1[randomInteger(0, p1.size() -1)], p1[randomInteger(0, p1.size() -1)]);
 }
