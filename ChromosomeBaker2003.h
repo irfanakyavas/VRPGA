@@ -10,32 +10,36 @@
 
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
+#ifdef _DEBUG
+#define min std::min
+#endif // _DEBUG
 
 //TODO: bu parametreler farklı bir dosyada tanımlanacak
-uint32_t MaxWorkTime = 0;
-uint32_t VehicleCapacity = 0;
-uint32_t minutesPerPackageDelivery = 4;
+uint32_t MAX_WORK_TIME = INT32_MAX;
+int VEHICLE_CAPACITY = 200;
+double minutesPerPackageDelivery = 0.0;
 
 struct Chromosome {
 	std::vector<uint32_t> genes;
 
 	std::vector<std::vector<uint32_t>> customersVisitedByVehicle;
-	std::vector<uint32_t> workTimeByVehicle;
-	std::vector<uint32_t> packagesDeliveredByVehicle;
+	std::vector<double> workTimeByVehicle;
+	std::vector<int> packagesDeliveredByVehicle;
 
-	std::vector<vector<double>> vehiclePoints;
+	std::vector<std::vector<double>> vehiclePoints;
 	std::vector<double> vehicleAngles;
 
-	uint32_t totalWorkTime = 0;
+	double totalWorkTime = 0.0;
 	uint32_t totalPackagesDelivered = 0;
 	uint32_t Nvehicles = 0;
+	double unfitness = 0.0;
 
 	Chromosome(uint32_t Ncustomers, uint32_t Nvehicles) {
 		this->genes = std::vector<uint32_t>(Ncustomers);
 
 		this->customersVisitedByVehicle = std::vector<std::vector<uint32_t>>(Nvehicles + 1);
-		this->workTimeByVehicle = std::vector<uint32_t>(Nvehicles+1);
-		this->packagesDeliveredByVehicle = std::vector<uint32_t>(Nvehicles+1);
+		this->workTimeByVehicle = std::vector<double>(Nvehicles+1, 0);
+		this->packagesDeliveredByVehicle = std::vector<int>(Nvehicles+1, 0);
 		this->Nvehicles = Nvehicles;
 		this->totalWorkTime = 0;
 		this->totalPackagesDelivered = 0;
@@ -43,8 +47,6 @@ struct Chromosome {
 		for (uint32_t i = 1; i < Nvehicles; i++)
 		{
 			customersVisitedByVehicle[i] = std::vector<uint32_t>();
-			workTimeByVehicle[i] = 0;
-			packagesDeliveredByVehicle[i] = 0;
 		}
 	}
 
@@ -61,6 +63,7 @@ struct Chromosome {
 		{
 			cout << "ERROR: NvehiclesReal != Nvehicles" << endl;
 		}*/
+		unfitness = 0.0;
 		for (uint32_t i = 0; i < Ncustomers(); i++)
 		{
 			/*
@@ -75,19 +78,20 @@ struct Chromosome {
 			totalWorkTime += Customer::customerDemands[customersSortIndices[i]] * minutesPerPackageDelivery;
 			totalPackagesDelivered += Customer::customerDemands[customersSortIndices[i]];
 		}
-		for (uint32_t i = 1; i <= Nvehicles; i++)
+		double timeSpent = 0.0;
+		for (int i = 1; i <= Nvehicles; i++)
 		{
-			if (verbose) cout << endl << "\t\t[TSP] Solving TSP for vehicle " << i << endl;
-			uint32_t timeSpent = 0;
-			if (customersVisitedByVehicle[i].size() > 0)
-				customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 256, timeSpent, verbose);
+			timeSpent = 0.0;
+			if (verbose) std::cout << std::endl << "\t\t[TSP] Solving TSP for vehicle " << i << std::endl;
+			customersVisitedByVehicle[i] = solveTSPforVehicle(customersVisitedByVehicle[i], 6, 128, timeSpent, verbose);
 			workTimeByVehicle[i] += timeSpent;
 			totalWorkTime += timeSpent;
-
+			unfitness += (packagesDeliveredByVehicle[i] - VEHICLE_CAPACITY) > 0 ? ((packagesDeliveredByVehicle[i] - VEHICLE_CAPACITY) / ((double)VEHICLE_CAPACITY)) : 0.0;
+			unfitness += (workTimeByVehicle[i] - MAX_WORK_TIME) > 0 ? ((workTimeByVehicle[i] - MAX_WORK_TIME) / ((double)MAX_WORK_TIME)) : 0.0;
 		}
 
-		if (verbose) cout << endl << "\t\t[VRP] All TSP instances solved for chromosome" << endl;
-		if (verbose)cout << "\t\t\tTotal Work Time=" << totalWorkTime << " Total Packages Delivered=" << totalPackagesDelivered << endl;
+		if (verbose) std::cout << std::endl << "\t\t[VRP] All TSP instances solved for chromosome" << std::endl;
+		if (verbose) std::cout << "\t\t\tTotal Work Time=" << totalWorkTime << " Total Packages Delivered=" << totalPackagesDelivered << std::endl;
 		//vehicleAngles = std::vector<double>(Nvehicles);
 		//vehiclePoints = std::vector<vector<double>>(Nvehicles + 1);
 		for (uint32_t i = 1; i <= Nvehicles; i++)
@@ -96,11 +100,11 @@ struct Chromosome {
 			//double sumLon = 0;
 			//vehiclePoints[i] = vector<double>(2);
 
-			if (verbose) cout << "\t\t\tVehicle " << i << "\tWork Time=" << workTimeByVehicle[i] << "\tPackages Delivered = " << packagesDeliveredByVehicle[i] << endl;
-			if (verbose) cout << "\t\t\tRoute: 0";
+			if (verbose) std::cout << "\t\t\tVehicle " << i << "\tWork Time=" << workTimeByVehicle[i] << "\tPackages Delivered = " << packagesDeliveredByVehicle[i] << std::endl;
+			if (verbose) std::cout << "\t\t\tRoute: 0";
 			for (uint32_t j = 0; j < customersVisitedByVehicle[i].size(); j++)
 			{
-				if (verbose) cout << "->" << customersVisitedByVehicle[i][j] + 1;
+				if (verbose) std::cout << "->" << customersVisitedByVehicle[i][j] + 1;
 				genes[customersVisitedByVehicle[i][j]] = i;
 				//sumLat += Customer::customerLAT[customersSortIndices[customersVisitedByVehicle[i][j]]];
 				//sumLon += Customer::customerLON[customersSortIndices[customersVisitedByVehicle[i][j]]];
@@ -111,7 +115,7 @@ struct Chromosome {
 		}
 		//vector<uint32_t> vehicleIndicesByDepotAngle = CIDsByAngle(vehicleAngles);
 
-		if (verbose) cout << endl << endl;
+		if (verbose) std::cout << std::endl << std::endl;
 
 		return totalWorkTime;
 	}
@@ -122,7 +126,7 @@ std::ostream& operator<<(std::ostream& Str, Chromosome const& c) {
 	{
 		Str << c.genes[i] << " ";
 	}
-	Str << endl;
+	Str << std::endl;
 	return Str;
 }
 
@@ -132,28 +136,26 @@ void initialiseRandomChromosome(Chromosome& c, bool verbose = false)
 	uint32_t numberOfCustomers = c.Ncustomers();
 	uint32_t meanCustomersPerVehicle = numberOfCustomers / c.Nvehicles;
 	uint32_t lastIndexAssigned = 0;
-	if (verbose) cout << endl << "[VRP] Random vehicle assignment started" << endl;
-	vector<uint32_t> vids(c.Nvehicles);
-	for(int k=0; k < c.Nvehicles; k++)
-		vids[k] = k+1;
-	//std::shuffle(vids.begin(), vids.end(), gen);
-	uint32_t numberOfCustomersAssigned = min(randomInteger(meanCustomersPerVehicle * 0.85, meanCustomersPerVehicle * 1.15), numberOfCustomers - customersAssignedSoFar);
+	if (verbose) std::cout << std::endl << "[VRP] Random vehicle assignment started" << std::endl;
+
+	uint32_t numberOfCustomersAssigned = min(randomInteger(meanCustomersPerVehicle * 0.95, meanCustomersPerVehicle * 1.05), numberOfCustomers - customersAssignedSoFar);
 	uint32_t k = randomInteger(numberOfCustomers - (numberOfCustomersAssigned / 2), numberOfCustomers);
+
+
 
 	for (uint32_t i = 0; i < c.Nvehicles - 1; i++)
 	{
-		numberOfCustomersAssigned = min(randomInteger(meanCustomersPerVehicle * 0.85, meanCustomersPerVehicle * 1.15), numberOfCustomers - customersAssignedSoFar);
-		customersAssignedSoFar += numberOfCustomersAssigned;
-		if (verbose) cout << "\t[VRP] Assigned " << numberOfCustomersAssigned << " customers to vehicle " << vids[i] << "\t" << numberOfCustomers - customersAssignedSoFar << " remaining. Total customer count: " << numberOfCustomers << std::endl;
+		numberOfCustomersAssigned = min(randomInteger(meanCustomersPerVehicle * 0.95, meanCustomersPerVehicle * 1.05), numberOfCustomers - customersAssignedSoFar);
 		for (uint32_t j = 0; j < numberOfCustomersAssigned; j++)
-		{
-			c.genes[k++ % numberOfCustomers] = vids[i];
-		}
+			c.genes[k++ % numberOfCustomers] = i + 1;
+		customersAssignedSoFar += numberOfCustomersAssigned;
+		if (verbose) std::cout << "\t[VRP] Assigned " << numberOfCustomersAssigned << " customers to vehicle " << i << "\t" << numberOfCustomers - customersAssignedSoFar << " remaining. Total customer count: " << numberOfCustomers << std::endl;
+
 	}
 	for (uint32_t i = 0; i < numberOfCustomers-customersAssignedSoFar; i++)
 	{
-		c.genes[k++ % numberOfCustomers] = vids[c.Nvehicles-1];
+		c.genes[k++ % numberOfCustomers] = c.Nvehicles;
 	}
-	if (verbose) cout << "\t[VRP] Assigned remaining " << numberOfCustomers - customersAssignedSoFar << " customers to last vehicle " << c.Nvehicles << endl;
+	if (verbose) std::cout << "\t[VRP] Assigned remaining " << numberOfCustomers - customersAssignedSoFar << " customers to last vehicle " << c.Nvehicles << std::endl;
 	//std::rotate(begin(c.genes), begin(c.genes)+randomInteger(1, numberOfCustomers/2), end(c.genes));
 }
