@@ -7,20 +7,9 @@
 #include <iostream>
 #include "Customer.h"
 #include "ChromosomeBaker2003.h"
-
+#include <chrono>
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
-
-struct VectorHash {
-    size_t operator()(const std::vector<uint32_t>& v) const {
-        std::hash<int> hasher;
-        size_t seed = 0;
-        for (int i : v) {
-            seed ^= hasher(i) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        }
-        return seed;
-    }
-};
 
 #ifndef _DEBUG
 using namespace matplot;
@@ -120,120 +109,73 @@ void plotChromosomeWorldmap(matplot::figure_handle& fh, const Chromosome& c, std
 }
 #endif
 #include <unordered_set>
-
+#include <format> 
 Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
 {
     if (verbose) std::cout << "[VRP] VRP solver initialising for " << Ncustomers << " customers and " << Nvehicles << " vehicles" << std::endl;
     
     std::vector<Chromosome> chromosomes(Npop, Chromosome(Ncustomers, Nvehicles));
-    std::unordered_set<std::vector<uint32_t>, VectorHash> chromosome_genes;
+    uint32_t i = 0, j = 1, i_max = 0, s1, s2, s3, s4;
+    Chromosome tmp1(Ncustomers, Nvehicles);
 
     if (verbose) std::cout << "[VRP] Generating random initial population..." << std::endl;
-    int n = 0;
-    while(n < Npop)
-    {
-		chromosomes[n] = Chromosome(Ncustomers, Nvehicles);
-        initialiseRandomChromosome(chromosomes[n], false);
-        auto r = chromosome_genes.insert(chromosomes[n].genes);
-        if (r.second == true)
-            n++;
-	}
-    Chromosome bestChromosomeEver(Ncustomers, Nvehicles);
-    uint32_t bestFitnessEver = UINT_FAST32_MAX, bestFitness = UINT_FAST32_MAX;
-    uint32_t i, j, i_max = 0;
+    
+    for(i=0;i < Npop; i++)
+        initialiseRandomChromosome(chromosomes[i], false);
 
     if (verbose) std::cout << "[VRP] Calculating initial population fitness..." << std::endl;
-    int tmp = 1;
-    for (i = 0; i < Npop; i++)
+
+    for (i=0;i < Npop; i++)
     {
         if (verbose && i % (Npop / 10) == 0 && i > 0)
         {
-            std::cout << "\t* Fitness calculation of initial population " << tmp*10 << "%." << std::endl;
-            tmp++;
+            std::cout << "\t* Fitness calculation of initial population " << j*10 << "%." << std::endl;
+            j++;
         }
-        uint32_t currentFitness = chromosomes[i].calculateFitness();
-        if (currentFitness < bestFitness)
-        {
-            bestFitness = currentFitness;
-            i_max = i;
-        }
+        chromosomes[0] = (chromosomes[i].calculateFitness() < chromosomes[0].totalWorkTime) ? chromosomes[i] : chromosomes[0];
     }
-    
-    bestChromosomeEver = chromosomes[i_max];
-    bestFitnessEver = bestChromosomeEver.totalWorkTime;
-    if (verbose) std::cout << "[VRP] Best objective function value in the initial population is " << bestChromosomeEver.totalWorkTime << " unfitness=" << bestChromosomeEver.unfitness << std::endl;
-
-    for (int k = 0; k < 10; k++)
-    {
-       // cout << chromosomes[k] << endl;
-    }
+   
+    if (verbose) std::cout << "[VRP] Initial population best   F*=" << chromosomes[0].totalWorkTime << "    U*=" << chromosomes[0].unfitness << std::endl;
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::milliseconds total = std::chrono::milliseconds(0);
+    auto now = ms;
+    auto milestoneGenCount = (Ngen / 20);
 #ifndef _DEBUG
-    plotChromosomeWorldmap(fig_initial, bestChromosomeEver, "Initial population best");
+    plotChromosomeWorldmap(fig_initial, chromosomes[0], "Initial population best");
 #endif // !
     for (i = 0; i < Ngen; i++) {
-        if (verbose && i % (Ngen / 20) == 0 && i >= 0) {
-            std::cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar= " << bestFitnessEver << " unfitness=" << bestChromosomeEver.unfitness << std::endl;// << " (";
-            
-            /*
-            for(uint32_t k = 1; k < Nvehicles; k++)
-				cout << bestChromosomeEver.workTimeByVehicle[k] << ",";
-			cout << bestChromosomeEver.workTimeByVehicle[Nvehicles] << ")" << endl;*/
-            
-            for (int k = 0; k < 10; k++)
-            {
-               // cout << chromosomes[k] << endl;
-            }
+        if (verbose && i % milestoneGenCount == 0 && i > 0) {
+            auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()) - now;
+            now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+            total += diff;
+            std::cout << std::format("\t*[{0:6d}/{1:6d}]\tF*={2:<6d} U*={3:1.4f}\t{4:2.4f} s/Gen\tT={5:6.2f} s", i, Ngen, chromosomes[0].totalWorkTime, chromosomes[0].unfitness, ((double)diff.count()) / 1000.0 / milestoneGenCount, total.count() / 1000.0) << std::endl;
+            //std::cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar= " << chromosomes[0].totalWorkTime << " unfitness= " << chromosomes[0].unfitness << "\t" << ((double)diff.count())/1000.0/milestoneGenCount << " Gen/s " << "Total time= " << total.count()/1000.0 << "s" << std::endl;// << " (";
         }
-        uint32_t s1, s2, s3, s4, s5, s6, s7, s8;
         for (j = 1; j < Npop; j++) {
-            s1 = randomInteger(0, Npop - 1); s2 = randomInteger(0, Npop - 1); s3 = randomInteger(0, Npop - 1); s4 = randomInteger(0, Npop - 1);
-            s5 = randomInteger(0, Npop - 1); s6 = randomInteger(0, Npop - 1); s7 = randomInteger(0, Npop - 1); s8 = randomInteger(0, Npop - 1);
+            s1 = randomInteger(0, Npop - 1); s2 = randomInteger(1, Npop - 1); s3 = randomInteger(1, Npop - 1); s4 = randomInteger(0, Npop - 1);
 
-            Chromosome tmp1(Ncustomers, Nvehicles);
-            //Chromosome tmp2(Ncustomers, Nvehicles);
-            //Chromosome tmp3(Ncustomers, Nvehicles);
-            s1 = chromosomes[s1].totalWorkTime < chromosomes[s2].totalWorkTime ? s1 : s2;
-            s2 = chromosomes[s3].totalWorkTime < chromosomes[s4].totalWorkTime ? s3 : s4;
-            //s5 = chromosomes[s5].totalWorkTime < chromosomes[s6].totalWorkTime ? s5 : s6;
-            //s6 = chromosomes[s7].totalWorkTime < chromosomes[s8].totalWorkTime ? s7 : s8;
+            crossover(chromosomes[s1].totalWorkTime < chromosomes[s2].totalWorkTime ? chromosomes[s1].genes : chromosomes[s2].genes,
+                      chromosomes[s3].totalWorkTime < chromosomes[s4].totalWorkTime ? chromosomes[s3].genes : chromosomes[s4].genes, tmp1.genes, Nvehicles);
 
-            crossover(chromosomes[s1].genes, chromosomes[s2].genes, tmp1.genes, Nvehicles);
-            //crossover(chromosomes[s5].genes, chromosomes[s6].genes, tmp2.genes, Nvehicles);
-            //tmp3 = tmp1;//.totalWorkTime < tmp2.totalWorkTime ? tmp1:tmp2;
-            
-            if (randomInteger(0,Npop) == 0)
+            if (randomInteger(0, Npop - 1) == 0)
                 mutate(tmp1.genes);
-            
-            auto r = chromosome_genes.insert(tmp1.genes);
-            if (r.second == false)
-            {
-                j--;
-                continue;
-            }
-            else
-            {
-                chromosome_genes.erase(chromosomes[j].genes);
-            }
+
             chromosomes[j] = tmp1;
 
-            if (chromosomes[j].calculateFitness() < bestFitnessEver) {
-                bestFitnessEver = chromosomes[j].totalWorkTime;
+            if (chromosomes[j].calculateFitness() < chromosomes[0].totalWorkTime) {
                 chromosomes[0] = chromosomes[j];
-				bestChromosomeEver = chromosomes[j];
                 initialiseRandomChromosome(chromosomes[j]);
-                chromosome_genes.insert(chromosomes[j].genes);
 #ifndef _DEBUG
-                plotChromosomeWorldmap(fig_currentBest, bestChromosomeEver, "Current Best Solution");
+                plotChromosomeWorldmap(fig_currentBest, chromosomes[0], "Current Best Solution");
 #endif // !
             }
         }
-        //memcpy(&chromosomes, &new_chromosomes, sizeof(chromosomes));
     }
     
 
-    std::cout << "[VRP] VRP solving with GA complete, Fstar=" << bestChromosomeEver.totalWorkTime << std::endl;
-    Fstar = bestChromosomeEver.totalWorkTime;
-    return bestChromosomeEver;
+    std::cout << "[VRP] VRP solving with GA complete, Fstar=" << chromosomes[0].totalWorkTime << std::endl;
+    Fstar = chromosomes[0].totalWorkTime;
+    return chromosomes[0];
 }
 
 void testTSPwithSingleChromosome() {
