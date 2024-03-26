@@ -17,7 +17,6 @@ using namespace matplot;
 matplot::figure_handle fig_initial = matplot::figure(true);
 matplot::figure_handle fig_currentBest = matplot::figure(true);
 
-
 void plotChromosomeCartesian(matplot::figure_handle& fh, const Chromosome& c, std::string title) {
     matplot::axes_handle ax_fix;
     ax_fix = fh->current_axes();
@@ -110,30 +109,39 @@ void plotChromosomeWorldmap(matplot::figure_handle& fh, const Chromosome& c, std
 #endif
 #include <unordered_set>
 #include <format> 
-Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint32_t Pmut, uint32_t Ngen, uint32_t& Fstar, bool verbose = false)
+
+Chromosome solveVRP(T_CUSTOMERID &Ncustomers, T_CUSTOMERID &Nvehicles, std::vector<Chromosome> &initialPopulation, uint32_t Npop, const uint32_t &Pmut,const uint32_t &Ngen, T_FITNESS& Fstar, bool verbose = false)
 {
+    uint32_t j = 1, s1, s2, s3, s4;
+    Fstar = MAX_FITNESS;
+    std::vector<Chromosome> chromosomes;
     if (verbose) std::cout << "[VRP] VRP solver initialising for " << Ncustomers << " customers and " << Nvehicles << " vehicles" << std::endl;
-    
-    std::vector<Chromosome> chromosomes(Npop, Chromosome(Ncustomers, Nvehicles));
-    uint32_t i = 0, j = 1, i_max = 0, s1, s2, s3, s4;
-    Chromosome tmp1(Ncustomers, Nvehicles);
-
-    if (verbose) std::cout << "[VRP] Generating random initial population..." << std::endl;
-    
-    for(i=0;i < Npop; i++)
-        initialiseRandomChromosome(chromosomes[i], false);
-
-    if (verbose) std::cout << "[VRP] Calculating initial population fitness..." << std::endl;
-
-    for (i=0;i < Npop; i++)
+    if (initialPopulation.size() <= 0)
     {
-        if (verbose && i % (Npop / 10) == 0 && i > 0)
+        chromosomes = std::vector<Chromosome>(Npop, Chromosome(Ncustomers, Nvehicles));
+        if (verbose) std::cout << "[VRP] Generating random initial population..." << std::endl;
+        for (uint32_t i = 0; i < Npop; i++)
+            initialiseRandomChromosome(chromosomes[i], false);
+
+        if (verbose) std::cout << "[VRP] Calculating initial population fitness..." << std::endl;
+
+        for (uint32_t i = 0; i < Npop; i++)
         {
-            std::cout << "\t* Fitness calculation of initial population " << j*10 << "%." << std::endl;
-            j++;
+            if (verbose && i % (Npop / 10) == 0 && i > 0)
+            {
+                std::cout << "\t* Fitness calculation of initial population " << j * 10 << "%." << std::endl;
+                j++;
+            }
+            chromosomes[0] = (chromosomes[i].calculateFitness() < chromosomes[0].totalWorkTime) ? chromosomes[i] : chromosomes[0];
         }
-        chromosomes[0] = (chromosomes[i].calculateFitness() < chromosomes[0].totalWorkTime) ? chromosomes[i] : chromosomes[0];
     }
+    else
+    {
+        Npop = (uint32_t)initialPopulation.size();
+        if (verbose) std::cout << "[VRP] Using provided initial population, ignoring Npop..." << std::endl;
+        chromosomes = initialPopulation;
+    }
+    Chromosome tmp1(Ncustomers, Nvehicles);
    
     if (verbose) std::cout << "[VRP] Initial population best   F*=" << chromosomes[0].totalWorkTime << "    U*=" << chromosomes[0].unfitness << std::endl;
     std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -141,14 +149,14 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
     auto now = ms;
     auto milestoneGenCount = (Ngen / 20);
 #ifndef _DEBUG
-    plotChromosomeWorldmap(fig_initial, chromosomes[0], "Initial population best");
+   plotChromosomeWorldmap(fig_initial, chromosomes[0], "Initial population best");
 #endif // !
-    for (i = 0; i < Ngen; i++) {
+    for (uint32_t i = 0; i < Ngen; i++) {
         if (verbose && i % milestoneGenCount == 0 && i > 0) {
             auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()) - now;
             now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
             total += diff;
-            std::cout << std::format("\t*[{0:6d}/{1:6d}]\tF*={2:<6d} U*={3:1.4f}\t{4:2.4f} s/Gen\tT={5:6.2f} s", i, Ngen, chromosomes[0].totalWorkTime, chromosomes[0].unfitness, ((double)diff.count()) / 1000.0 / milestoneGenCount, total.count() / 1000.0) << std::endl;
+            std::cout << std::format("\t*[{0:6d}/{1:6d}]\tF*={2:<6d} U*={3:1.4f}\t{4:2.4f} s/Gen\tT={5:6.2f} s", i, Ngen, chromosomes[0].totalWorkTime, chromosomes[0].unfitness, ((float)diff.count()) / 1000.0 / milestoneGenCount, total.count() / 1000.0) << std::endl;
             //std::cout << "\t* Generation " << i << " of " << Ngen << "\t" << "Fstar= " << chromosomes[0].totalWorkTime << " unfitness= " << chromosomes[0].unfitness << "\t" << ((double)diff.count())/1000.0/milestoneGenCount << " Gen/s " << "Total time= " << total.count()/1000.0 << "s" << std::endl;// << " (";
         }
         for (j = 1; j < Npop; j++) {
@@ -179,10 +187,9 @@ Chromosome solveVRP(uint32_t Ncustomers, uint32_t Nvehicles, uint32_t Npop, uint
 }
 
 void testTSPwithSingleChromosome() {
-    Chromosome c1(customers.size(), 4);
-    initialiseRandomChromosome(c1, true);
-
-    c1.calculateFitness(true);
+    //Chromosome c1(customers.size(), 4);
+    //initialiseRandomChromosome(c1, true);
+    //c1.calculateFitness(true);
     //plotChromosomeWorldmap(fig_currentBest,c1, "");
     //matplot::show();
 }
@@ -192,12 +199,34 @@ void testTSPwithSingleChromosome() {
 #include "RandomUtils.h"
 int main() {
     loadData("TCB100");
-    std::cout << "Random pool init completed" << std::endl;
-    uint32_t Fstar = UINT32_MAX;
+    T_CUSTOMERID Ncustomers = customers.size();
+    T_CUSTOMERID Nvehicles = 10;
+    uint32_t Npop1 = 72;
+    uint32_t Npop2 = 256;
+    uint32_t Pmut = 8;
+    uint32_t Ngen1 = 256;
+    uint32_t Ngen2 = 2048;
 
-    Chromosome bestChromosomeEver = solveVRP(customers.size(),10, 64, 8, 1024, Fstar, true);
+    T_FITNESS Fstar = 0;
+    std::vector<Chromosome> initialPopulation;
+    std::vector<Chromosome> _initialPopulation(Npop2, Chromosome(Ncustomers, Nvehicles));
+    Chromosome bestChromosomeEver(Ncustomers, Nvehicles);
+    for (uint32_t i = 0; i < Npop2; i++)
+    {
+        bestChromosomeEver = solveVRP(Ncustomers, Nvehicles, initialPopulation, Npop1, Pmut, Ngen1, Fstar, false);
+        _initialPopulation[i] = bestChromosomeEver;
+        std::cout << "Pre-solve [" << i+1 << "/" << Npop2 << "]" << std::endl;
 #ifndef _DEBUG
-    //plot(bestChromosomeEver);
+        //plotChromosomeWorldmap(fig_currentBest, bestChromosomeEver, "Best Solution");
+#endif // !
+    }
+
+    bestChromosomeEver = solveVRP(Ncustomers, Nvehicles, _initialPopulation, Npop2, Pmut, Ngen2, Fstar, true);
+
+#ifndef _DEBUG
+    plotChromosomeWorldmap(fig_currentBest, bestChromosomeEver, "Best Solution");
+
+    matplot::show();
 #endif // !
     return 0;
 }

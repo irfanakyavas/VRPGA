@@ -5,29 +5,30 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include "defines.h"
 
 struct Customer {
-    uint32_t CID = UINT32_MAX;
-    double LAT;
-    double LON;
-    double angleWithDepot = 0.0;
-    uint32_t distanceFromDepot = 0;
-    uint32_t demand = 0;
-    static std::vector<uint32_t> depotDistances;
-    static std::vector<double> depotAngles;
-    static std::vector<uint32_t> customerDemands;
-    static std::vector<double> customerLAT;
-    static std::vector<double> customerLON;
-	static std::vector<uint32_t> customerIDs;
+    T_CUSTOMERID CID = MAX_CID;
+    float LAT;
+    float LON;
+    float angleWithDepot = 0.0;
+    T_DIST distanceFromDepot = 0;
+    T_DEMAND demand = 0;
+    static std::vector<T_DIST> depotDistances;
+    static std::vector<float> depotAngles;
+    static std::vector<T_DEMAND> customerDemands;
+    static std::vector<float> customerLAT;
+    static std::vector<float> customerLON;
+	static std::vector<T_CUSTOMERID> customerIDs;
 };
 
-std::vector<std::vector<uint32_t>> distanceMatrix;
-std::vector<std::vector<uint32_t>> distanceMatrixSorted;
-std::vector<uint32_t> depotDistancesSorted;
+std::vector<std::vector<T_DIST>> distanceMatrix;
+std::vector<std::vector<T_DIST>> distanceMatrixSorted;
+std::vector<T_DIST> depotDistancesSorted;
 std::vector<Customer> customers;
-std::vector<uint32_t> customersSortIndices;
-std::vector<uint32_t> CIDsByAngle(std::vector<double> depotAngles);
-std::vector<uint32_t> CIDsByDepotDistances(std::vector<uint32_t> depotDistances);
+std::vector<T_CUSTOMERID> customersSortIndices;
+std::vector<T_CUSTOMERID> CIDsByAngle(std::vector<float> depotAngles);
+std::vector<T_CUSTOMERID> CIDsByDepotDistances(std::vector<T_DIST> depotDistances);
 Customer Depot;
 
 inline bool operator< (const Customer& lhs, const Customer& rhs) {
@@ -45,7 +46,7 @@ std::ostream& operator<<(std::ostream& Str, Customer const& v) {
     return Str;
 }
 
-inline double angleWithDepot(double lat, double lon)
+inline float angleWithDepot(float lat, float lon)
 {
     return atan2(lat - Depot.LAT, lon - Depot.LON);
 }
@@ -61,12 +62,12 @@ void loadCustomersFromCSV(const std::string& filename) {
             std::istringstream iss(line);
             std::string token;
             std::getline(iss, token, ','); // Read PointID
-            uint32_t pointID = std::stoi(token);
+            T_CUSTOMERID pointID = std::stoi(token);
             std::getline(iss, token, ','); // Read LAT
-            double latitude = std::stod(token);
+            float latitude = std::stod(token);
             std::getline(iss, token, ','); // Read LON
-            double longitude = std::stod(token);
-            double angleWithDepot = 0.0;
+            float longitude = std::stod(token);
+            float angleWithDepot = 0.0;
             if (first)
             {
                 Depot = Customer{ pointID, latitude, longitude, angleWithDepot, 0, 0 };
@@ -98,9 +99,9 @@ void loadDemandFromCSV(const std::string& filename, std::vector<Customer>& custo
             std::string token;
 
             std::getline(iss, token, ',');
-            uint32_t pointID = std::stoi(token);
+            T_CUSTOMERID pointID = std::stoi(token);
             std::getline(iss, token, ',');
-            uint32_t demand = std::stoi(token);
+            T_DEMAND demand = std::stoi(token);
             customers[i].demand = demand;
             Customer::customerDemands.push_back(demand);
 			i++;
@@ -111,7 +112,7 @@ void loadDemandFromCSV(const std::string& filename, std::vector<Customer>& custo
     }
 }
 
-std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
+std::vector<std::vector<T_DIST>> loadDistanceMatrixFromTSV(const std::string& filename, std::vector<Customer> customers) {
     std::ifstream file(filename);
 
     if (file.is_open()) {
@@ -123,7 +124,7 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
         // status variable for the
         bool currentLineIsDepotDistances = true;
         while (std::getline(file, line)) {
-            std::vector<uint32_t> row;
+            std::vector<T_DIST> row;
             uint32_t value;
 
             // Create a stringstream from the line
@@ -139,7 +140,7 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
                 int i = 0;
                 while (ss >> value)
                 {
-                    customers[i].distanceFromDepot = value / 60000.0;
+                    customers[i].distanceFromDepot = (T_DIST)(value / 60000.0);
                     Customer::depotDistances.push_back(customers[i++].distanceFromDepot);
                     ss.ignore();
                 }
@@ -153,7 +154,7 @@ std::vector<std::vector<uint32_t>> loadDistanceMatrixFromTSV(const std::string& 
                 ss >> value;
                 ss.ignore();
                 while (ss >> value) {
-                    row.push_back(value / 60000.0);
+                    row.push_back((T_DIST) (value / 60000.0));
                     // Ignore the tab character
                     ss.ignore();
                 }
@@ -182,24 +183,14 @@ void loadData(std::string caseStr, bool verbose = false)
         depotDistancesSorted.push_back(Customer::depotDistances[customersSortIndices[i]]);
 	}
 
-    distanceMatrixSorted = std::vector<std::vector<uint32_t>>();
+    distanceMatrixSorted = std::vector<std::vector<T_DIST>>();
     for (uint32_t i = 0; i < customers.size(); i++)
     {
-        std::vector<uint32_t> row(customers.size());
+        std::vector<T_DIST> row(customers.size());
         for (uint32_t j = 0; j < customers.size(); j++)
             row[j] = distanceMatrix[customersSortIndices[i]][customersSortIndices[j]];
         distanceMatrixSorted.push_back(row);
     }
     if (verbose) for (const Customer& c : customers) std::cout << c << std::endl;
     std::cout << "[VRP] Data loaded for case " << caseStr << std::endl;
-}
-
-inline uint32_t Distance(uint32_t x, uint32_t y)
-{
-    return distanceMatrix[customersSortIndices[x]][customersSortIndices[y]];
-}
-
-inline uint32_t Distance(uint32_t x, uint32_t y, std::vector<uint32_t> indices, std::vector<std::vector<uint32_t>>& distanceMatrix)
-{
-    return distanceMatrix[indices[x]][indices[y]];
 }

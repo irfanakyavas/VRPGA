@@ -17,7 +17,6 @@
 #include <cmath>
 #include <list>
 #include <vector>
-#include "parameters.h"
 #include "RandomUtils.h"
 
 #define USE_PMX
@@ -27,27 +26,27 @@
 #include <map>
 #include <set>
 
-inline void crossover(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1, const uint32_t& Nvehicles)
+inline void crossover(const std::vector<T_CUSTOMERID>& p1, const std::vector<T_CUSTOMERID>& p2, std::vector<T_CUSTOMERID>& o1, const T_CUSTOMERID& Nvehicles)
 {
-    static std::set<uint32_t> visited;
-    uint32_t Ncustomers = p1.size();
+    static std::set<T_VISITED_ARRAY> visited;
+    T_CUSTOMERID Ncustomers = p1.size();
     /*
     if (p2.size() != Ncustomers)
     {
         cout << "PMX: p1 and p2 have different sizes" << endl;
         exit(-1);
     }*/
-    o1 = std::vector<uint32_t>(Ncustomers);
+    o1 = std::vector<T_CUSTOMERID>(Ncustomers);
 
-    uint32_t point1 = randomInteger(1, Ncustomers - 1);
-    uint32_t point2 = point1;
+    T_CUSTOMERID point1 = randomInteger(1, Ncustomers - 1);
+    T_CUSTOMERID point2 = point1;
     while (point1 == point2)
     {
         point2 = randomInteger(1, Ncustomers - 1);
     }
     if (point1 > point2)
     {
-        uint32_t temp = point1;
+        T_CUSTOMERID temp = point1;
         point1 = point2;
         point2 = temp;
     }
@@ -92,7 +91,7 @@ inline void crossover(const std::vector<uint32_t>& p1, const std::vector<uint32_
             visited.insert(p2[i]);
         }
     }
-
+    
     if (visited.size() != Nvehicles)
     {
         for (uint32_t i = 0; i < p1.size(); i++)
@@ -104,26 +103,26 @@ inline void crossover(const std::vector<uint32_t>& p1, const std::vector<uint32_
     visited.clear();
 }
 
-inline void crossoverFull(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1, std::vector<uint32_t>& o2)
+inline void crossoverFull(const std::vector<T_CUSTOMERID>& p1, const std::vector<T_CUSTOMERID>& p2, std::vector<T_CUSTOMERID>& o1, std::vector<T_CUSTOMERID>& o2)
 {
-    uint32_t Ncustomers = p1.size();
+    T_CUSTOMERID Ncustomers = p1.size();
     if (p2.size() != Ncustomers)
     {
         std::cout << "PMX: p1 and p2 have different sizes" << std::endl;
         exit(-1);
     }
-    o1 = std::vector<uint32_t>(Ncustomers);
-    o2 = std::vector<uint32_t>(Ncustomers);
+    o1 = std::vector<T_CUSTOMERID>(Ncustomers);
+    o2 = std::vector<T_CUSTOMERID>(Ncustomers);
 
-    uint32_t point1 = randomInteger(1, Ncustomers - 3);
-    uint32_t point2 = point1;
+    T_CUSTOMERID point1 = randomInteger(1, Ncustomers - 3);
+    T_CUSTOMERID point2 = point1;
     while (point1 == point2)
     {
         point2 = randomInteger(1, Ncustomers - 2);
     }
     if (point1 > point2)
     {
-        uint32_t temp = point1;
+        T_CUSTOMERID temp = point1;
         point1 = point2;
         point2 = temp;
     }
@@ -131,7 +130,7 @@ inline void crossoverFull(const std::vector<uint32_t>& p1, const std::vector<uin
     // p2 = 4   
     // p1 = 1
     // 
-    std::vector<uint32_t> temp_section(point2 - point1 + 1);
+    std::vector<T_CUSTOMERID> temp_section(point2 - point1 + 1);
 
     for (uint32_t i = 0; i < point1; i++)
     {
@@ -149,49 +148,61 @@ inline void crossoverFull(const std::vector<uint32_t>& p1, const std::vector<uin
     }
 }
 #include<unordered_set>
+#include "simd_memset.h"
+#include "defines.h"
 #define minv(vec) *std::min_element(vec.begin(), vec.end())
 #define maxv(vec) *std::max_element(vec.begin(), vec.end())
 #define vcontains(vec, x) std::find(vec.begin(), vec.end(), x) != vec.end()
 //#define dists distanceMatrixSorted
 //#define depotDists depotDistancesSorted;
 
-void crossoverSCX(const std::vector<uint32_t>& p1, const std::vector<uint32_t>& p2, std::vector<uint32_t>& o1) {
-    static std::vector<std::vector<uint32_t>> dists = distanceMatrixSorted;
-    static std::vector<uint32_t> depotDists = depotDistancesSorted;
-    //std::unordered_set<uint32_t> visited1(p1.begin(), p1.end()), visited2(p2.begin(), p2.end());
+//#define T_VISITED_ARRAY uint_fast8_t
 
-    uint32_t Ncustomers = p1.size();
-    uint32_t i1 = 1, i2 = 1 , j = 1, opt1, opt2;
+void crossoverSCX(const std::vector<T_CUSTOMERID>& p1, const std::vector<T_CUSTOMERID>& p2, std::vector<T_CUSTOMERID>& o1) {
+    static T_VISITED_ARRAY visited[101];
+    static std::vector<std::vector<T_DIST>> dists = distanceMatrixSorted;
+    static std::vector<T_DIST> depotDists = depotDistancesSorted;
+
+    //std::fill(visited.begin(), visited.end(), 0);
+    //memset2(visited, 0, sizeof(visited));
+    memset(visited, 0, sizeof(visited));
+
+    T_CUSTOMERID  Ncustomers = p1.size(), i1 = 1, i2 = 1, j = 1, opt1, opt2;
     o1[0] = p1[0];
-    for (; j < Ncustomers; j++)
+    visited[o1[0]] = 1;
+    for (; j < Ncustomers - 1; j++)
     {
         opt1 = p1[i1++ % Ncustomers];
-        if (vcontains(o1, opt1))
+        if (visited[opt1])
         {
-            for(; vcontains(o1, opt1); i1++)
+            for(; visited[opt1]; i1++)
 				opt1 = p1[i1 % Ncustomers];
         }
-        if (j == Ncustomers - 1)
+        opt2 = p2[i2++ % Ncustomers];
+        if (visited[opt2])
         {
-            opt2 = p2[i2++ % Ncustomers];
-            if (vcontains(o1, opt2))
-            {
-                for (; vcontains(o1, opt2); i2++)
-                    opt2 = p2[i2 % Ncustomers];
-            }
-            opt1 = dists[o1[j - 1]][opt1] < dists[o1[j - 1]][opt2] ? opt1 : opt2;
+            for (; visited[opt2]; i2++)
+                opt2 = p2[i2 % Ncustomers];
         }
-        o1[j] = opt1;
+        o1[j] = dists[o1[j - 1]][opt1] < dists[o1[j - 1]][opt2] ? opt1 : opt2;
+        visited[o1[j]] = 1;
     }
+    opt1 = p1[i1++ % Ncustomers];
+    if (visited[opt1])
+    {
+        for (; visited[opt1]; i1++)
+            opt1 = p1[i1 % Ncustomers];
+    }
+    o1[j] = opt1;
 }
- void crossoverPMX(const std::vector<uint32_t> &p1, const std::vector<uint32_t> &p2, std::vector<uint32_t> &o1)
+ void crossoverPMX(const std::vector<T_CUSTOMERID> &p1, const std::vector<T_CUSTOMERID> &p2, std::vector<T_CUSTOMERID> &o1)
 {
     static std::mt19937 _gen(seed);
-    static constexpr uint_fast32_t sizeof_visited = 100 * sizeof(uint_fast16_t);
-    uint_fast16_t* visited = (uint_fast16_t*) _alloca(sizeof_visited);
-    uint32_t left, k_, p, right;
-    uint32_t Ncustomers = p2.size();
-    std::uniform_int_distribution<uint32_t> dis(1, Ncustomers - 1);
+    static constexpr uint_fast32_t sizeof_visited = 100 * sizeof(T_CUSTOMERID);
+    T_CUSTOMERID* visited = (T_CUSTOMERID*) _alloca(sizeof_visited);
+    T_CUSTOMERID left, k_, p, right;
+    T_CUSTOMERID Ncustomers = p2.size();
+    std::uniform_int_distribution<T_CUSTOMERID> dis(1, Ncustomers - 1);
 
     memset(visited, 0, sizeof_visited);
 

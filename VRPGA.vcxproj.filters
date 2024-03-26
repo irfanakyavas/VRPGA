@@ -24,6 +24,9 @@
     <ClCompile Include="Customer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="simd_memset.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TSP\chromosomeTSP.h">
@@ -41,7 +44,7 @@
     <ClInclude Include="Customer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Parameters.h">
+    <ClInclude Include="defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PMX.h">
